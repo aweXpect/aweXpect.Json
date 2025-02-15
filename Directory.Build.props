@@ -1,0 +1,16 @@
+<Project>
+
+	<PropertyGroup>
+		<Authors>aweXpect</Authors>
+		<Copyright>Copyright (c) 2024 Valentin Breuß</Copyright>
+		<RepositoryUrl>https://github.com/aweXpect/aweXpect.T6e.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)/strongname.snk</AssemblyOriginatorKeyFile>
+		<SignAssembly>True</SignAssembly>
+		<PublicKey>00240000048000009400000006020000002400005253413100040000010001005195ec7b98b392e9afc7e3f8f75a764ed66a4bd30272d586a0c4d4bf179d70d11c27d5964873e634b08fa1135f4c843571fc2d73d96b32cfca13b08d42649c22076aac6a5605e70c7a2e2a22805a2480b115da24eb647ec12c0b3bb068a62fa111214afba8cbb81ff810073244cf6211dcfd3d44aa2e736ef3f5f673f1358fbb</PublicKey>
+	</PropertyGroup>
+
+</Project>
