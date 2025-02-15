@@ -24,6 +24,6 @@
 		<PackageVersion Include="xunit.v3" Version="1.1.0"/>
 		<PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1"/>
 		<PackageVersion Include="coverlet.collector" Version="6.0.4"/>
-		<PackageVersion Include="PublicApiGenerator" Version="11.3.0"/>
+		<PackageVersion Include="PublicApiGenerator" Version="11.4.1"/>
 	</ItemGroup>
 </Project>
