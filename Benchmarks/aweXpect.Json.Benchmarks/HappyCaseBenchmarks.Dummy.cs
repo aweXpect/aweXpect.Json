@@ -1,9 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
 
-namespace aweXpect.T6e.Benchmarks;
+namespace aweXpect.Json.Benchmarks;
 
 /// <summary>
-///     This is a dummy benchmark in the T6e template.
+///     This is a dummy benchmark in the Json template.
 /// </summary>
 public partial class HappyCaseBenchmarks
 {

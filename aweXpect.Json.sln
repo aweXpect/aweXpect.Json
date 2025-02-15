@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{99D141BC-CCD6-4E
 		LICENSE = LICENSE
 		nuget.config = nuget.config
 		README.md = README.md
-		aweXpect.T6e.sln.DotSettings = aweXpect.T6e.sln.DotSettings
+		aweXpect.Json.sln.DotSettings = aweXpect.Json.sln.DotSettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1308040E-AFD3-4404-81E0-CC3746984A6F}"
@@ -42,13 +42,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{B776D4D9-F241-49BA-B005-8484BC686008}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.T6e.Benchmarks", "Benchmarks\aweXpect.T6e.Benchmarks\aweXpect.T6e.Benchmarks.csproj", "{E122DD93-09CD-4316-A0D0-F57019A3B9B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.Json.Benchmarks", "Benchmarks\aweXpect.Json.Benchmarks\aweXpect.Json.Benchmarks.csproj", "{E122DD93-09CD-4316-A0D0-F57019A3B9B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.T6e", "Source\aweXpect.T6e\aweXpect.T6e.csproj", "{DA22A80F-C009-481F-A8D0-FB895BEA525B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.Json", "Source\aweXpect.Json\aweXpect.Json.csproj", "{DA22A80F-C009-481F-A8D0-FB895BEA525B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.T6e.Tests", "Tests\aweXpect.T6e.Tests\aweXpect.T6e.Tests.csproj", "{494F4BA5-02EE-4656-9D5E-BF9BB25C49E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.Json.Tests", "Tests\aweXpect.Json.Tests\aweXpect.Json.Tests.csproj", "{494F4BA5-02EE-4656-9D5E-BF9BB25C49E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.T6e.Api.Tests", "Tests\aweXpect.T6e.Api.Tests\aweXpect.T6e.Api.Tests.csproj", "{EA828A6C-5C01-4950-9F67-F53847CE3DDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aweXpect.Json.Api.Tests", "Tests\aweXpect.Json.Api.Tests\aweXpect.Json.Api.Tests.csproj", "{EA828A6C-5C01-4950-9F67-F53847CE3DDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

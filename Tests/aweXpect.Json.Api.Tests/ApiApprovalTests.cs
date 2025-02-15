@@ -9,9 +9,9 @@ public sealed class ApiApprovalTests
 {
 	[Theory]
 	[MemberData(nameof(TargetFrameworksTheoryData))]
-	public async Task VerifyPublicApiForAweXpectT6e(string framework)
+	public async Task VerifyPublicApiForAweXpectJson(string framework)
 	{
-		const string assemblyName = "aweXpect.T6e";
+		const string assemblyName = "aweXpect.Json";
 
 		string publicApi = Helper.CreatePublicApi(framework, assemblyName);
 		string expectedApi = Helper.GetExpectedApi(framework, assemblyName);

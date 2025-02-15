@@ -3,7 +3,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
-namespace aweXpect.T6e.Benchmarks;
+namespace aweXpect.Json.Benchmarks;
 
 [MarkdownExporterAttribute.GitHub]
 [MemoryDiagnoser]
