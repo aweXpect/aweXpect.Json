@@ -10,7 +10,7 @@ namespace Build;
 	"Build",
 	GitHubActionsImage.UbuntuLatest,
 	AutoGenerate = false,
-	ImportSecrets = [nameof(GithubToken)]
+	ImportSecrets = [nameof(GithubToken),]
 )]
 partial class Build : NukeBuild
 {
@@ -27,9 +27,5 @@ partial class Build : NukeBuild
 	AbsolutePath TestResultsDirectory => RootDirectory / "TestResults";
 	GitHubActions GitHubActions => GitHubActions.Instance;
 
-	public static int Main() => Execute<Build>([
-		x => x.ApiChecks,
-		x => x.Benchmarks,
-		x => x.CodeAnalysis,
-	]);
+	public static int Main() => Execute<Build>(x => x.ApiChecks, x => x.Benchmarks, x => x.CodeAnalysis);
 }

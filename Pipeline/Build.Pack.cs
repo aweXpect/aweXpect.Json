@@ -1,11 +1,11 @@
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Utilities.Collections;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Nuke.Common;
+using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities;
+using Nuke.Common.Utilities.Collections;
 using static Serilog.Log;
 
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -32,7 +32,8 @@ partial class Build
 				$"[![Changelog](https://img.shields.io/badge/Changelog-v{version}-blue)](https://github.com/aweXpect/aweXpect.Json/releases/tag/v{version})");
 			foreach (string line in lines.Skip(1))
 			{
-				if (line.StartsWith("[![Build](https://github.com/aweXpect/aweXpect.Json/actions/workflows/build.yml") ||
+				if (line.StartsWith(
+					    "[![Build](https://github.com/aweXpect/aweXpect.Json/actions/workflows/build.yml") ||
 				    line.StartsWith("[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure"))
 				{
 					continue;
@@ -71,7 +72,10 @@ partial class Build
 			AbsolutePath packagesDirectory = ArtifactsDirectory / "Packages";
 			packagesDirectory.CreateOrCleanDirectory();
 
-			foreach (Project project in new[] { Solution.aweXpect_Json })
+			foreach (Project project in new[]
+			         {
+				         Solution.aweXpect_Json,
+			         })
 			{
 				foreach (string package in
 				         Directory.EnumerateFiles(project.Directory / "bin", "*.nupkg", SearchOption.AllDirectories))
