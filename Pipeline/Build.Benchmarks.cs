@@ -117,6 +117,7 @@ partial class Build
 				MakeLineBold(sb, line);
 				continue;
 			}
+
 			sb.AppendLine(line);
 		}
 
@@ -126,15 +127,15 @@ partial class Build
 
 	static void MakeLineBold(StringBuilder sb, string line)
 	{
-		var tokens = line.Split("|", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+		string[] tokens = line.Split("|", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 		sb.Append('|');
-		foreach (var token in tokens)
+		foreach (string token in tokens)
 		{
 			sb.Append(" **");
 			sb.Append(token);
 			sb.Append("** |");
 		}
-		
+
 		sb.AppendLine();
 	}
 }

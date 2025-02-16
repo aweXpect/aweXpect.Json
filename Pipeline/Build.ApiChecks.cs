@@ -3,6 +3,7 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+
 // ReSharper disable AllUnderscoreLocalParameterName
 
 namespace Build;
