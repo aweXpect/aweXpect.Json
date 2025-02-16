@@ -22,13 +22,13 @@ partial class Build
 			benchmarkDirectory.CreateOrCleanDirectory();
 
 			DotNetBuild(s => s
-				.SetProjectFile(Solution.Benchmarks.aweXpect_T6e_Benchmarks)
+				.SetProjectFile(Solution.Benchmarks.aweXpect_Json_Benchmarks)
 				.SetConfiguration(Configuration.Release)
 				.EnableNoLogo());
 
 			DotNet(
-				$"{Solution.Benchmarks.aweXpect_T6e_Benchmarks.Name}.dll --exporters json --filter * --artifacts \"{benchmarkDirectory}\"",
-				Solution.Benchmarks.aweXpect_T6e_Benchmarks.Directory / "bin" / "Release");
+				$"{Solution.Benchmarks.aweXpect_Json_Benchmarks.Name}.dll --exporters json --filter * --artifacts \"{benchmarkDirectory}\"",
+				Solution.Benchmarks.aweXpect_Json_Benchmarks.Directory / "bin" / "Release");
 		});
 
 	Target BenchmarkResult => _ => _
@@ -36,7 +36,7 @@ partial class Build
 		.Executes(async () =>
 		{
 			string fileContent = await File.ReadAllTextAsync(ArtifactsDirectory / "Benchmarks" / "results" /
-			                                                 "aweXpect.T6e.Benchmarks.HappyCaseBenchmarks-report-github.md");
+			                                                 "aweXpect.Json.Benchmarks.HappyCaseBenchmarks-report-github.md");
 			Log.Information("Report:\n {FileContent}", fileContent);
 		});
 
@@ -54,7 +54,7 @@ partial class Build
 				Credentials tokenAuth = new(GithubToken);
 				gitHubClient.Credentials = tokenAuth;
 				IReadOnlyList<IssueComment> comments =
-					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.T6e", prId.Value);
+					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId.Value);
 				long? commentId = null;
 				Log.Information($"Found {comments.Count} comments");
 				foreach (IssueComment comment in comments)
@@ -69,12 +69,12 @@ partial class Build
 				if (commentId == null)
 				{
 					Log.Information($"Create comment:\n{body}");
-					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.T6e", prId.Value, body);
+					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId.Value, body);
 				}
 				else
 				{
 					Log.Information($"Update comment:\n{body}");
-					await gitHubClient.Issue.Comment.Update("aweXpect", "aweXpect.T6e", commentId.Value, body);
+					await gitHubClient.Issue.Comment.Update("aweXpect", "aweXpect.Json", commentId.Value, body);
 				}
 			}
 		});
@@ -87,7 +87,7 @@ partial class Build
 	string CreateCommentBody()
 	{
 		string[] fileContent = File.ReadAllLines(ArtifactsDirectory / "Benchmarks" / "results" /
-		                                         "aweXpect.T6e.Benchmarks.HappyCaseBenchmarks-report-github.md");
+		                                         "aweXpect.Json.Benchmarks.HappyCaseBenchmarks-report-github.md");
 		StringBuilder sb = new();
 		sb.AppendLine("## :rocket: Benchmark Results");
 		sb.AppendLine("<details>");
