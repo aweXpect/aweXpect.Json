@@ -57,7 +57,7 @@ internal class JsonValidation : IJsonObjectResult,
 #else
 		if (index < 0)
 		{
-			throw new ArgumentOutOfRangeException("The index must be greater than or equal to 0.", nameof(index));
+			throw new ArgumentOutOfRangeException(nameof(index), "The index must be greater than or equal to 0.");
 		}
 #endif
 
