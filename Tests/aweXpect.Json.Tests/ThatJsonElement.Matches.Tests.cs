@@ -1,5 +1,4 @@
-﻿#if NET8_0_OR_GREATER
-using System.Text.Json;
+﻿using System.Text.Json;
 using aweXpect.Json;
 
 namespace aweXpect.Tests;
@@ -343,4 +342,3 @@ public sealed partial class ThatJsonElement
 		}
 	}
 }
-#endif
