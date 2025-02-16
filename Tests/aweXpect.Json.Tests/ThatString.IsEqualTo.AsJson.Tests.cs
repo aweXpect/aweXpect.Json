@@ -28,6 +28,49 @@ public sealed partial class ThatString
 				}
 
 				[Fact]
+				public async Task WhenContainsMoreThan10Differences_ShouldLimitListOfDifferences()
+				{
+					string subject = """
+					                 {
+					                   "foo1": null,
+					                   "foo2": null,
+					                   "foo3": null,
+					                   "foo4": null,
+					                   "foo5": null,
+					                   "foo6": null,
+					                   "foo7": null,
+					                   "foo8": null,
+					                   "foo9": null,
+					                   "foo10": null,
+					                   "foo11": null,
+					                   "foo12": null,
+					                 }
+					                 """;
+					string expected = "{}";
+
+					async Task Act()
+						=> await That(subject).IsEqualTo(expected).AsJson();
+
+					await That(Act).Throws<XunitException>()
+						.WithMessage("""
+						             Expected that subject
+						             is JSON equivalent to {},
+						             but it differed as
+						               $.foo1 had unexpected Null and
+						               $.foo2 had unexpected Null and
+						               $.foo3 had unexpected Null and
+						               $.foo4 had unexpected Null and
+						               $.foo5 had unexpected Null and
+						               $.foo6 had unexpected Null and
+						               $.foo7 had unexpected Null and
+						               $.foo8 had unexpected Null and
+						               $.foo9 had unexpected Null and
+						               $.foo10 had unexpected Null and
+						                … (2 more)
+						             """);
+				}
+
+				[Fact]
 				public async Task
 					WhenContainsMoreThanMaximumNumberOfCollectionItemsDifferences_ShouldLimitListOfDifferences()
 				{
