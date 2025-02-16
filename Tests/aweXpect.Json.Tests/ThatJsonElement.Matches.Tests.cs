@@ -43,8 +43,8 @@ public sealed partial class ThatJsonElement
 					.WithMessage($"""
 					              Expected that subject
 					              matches expected,
-					              but it differed as $ was {json} instead of {Format.Formatter.Format(expected)}
-					              """);
+					              but it differed as $ was {json} instead of *
+					              """).AsWildcard();
 			}
 
 			[Theory]
