@@ -1,10 +1,8 @@
-﻿using System.Text.Json;
+﻿namespace aweXpect.Json.Tests;
 
-namespace aweXpect.Json.Tests;
-
-public sealed partial class ThatNullableJsonElement
+public sealed partial class ThatJsonString
 {
-	public sealed class MatchesExactly
+	public sealed class IsValidJsonMatchingExactly
 	{
 		public sealed class Tests
 		{
@@ -13,107 +11,83 @@ public sealed partial class ThatNullableJsonElement
 			[InlineData("true", false, false)]
 			[InlineData("false", true, false)]
 			[InlineData("false", false, true)]
-			public async Task BooleanValue_ShouldSucceedWhenMatching(string json, bool expected, bool isMatch)
+			public async Task BooleanValue_ShouldSucceedWhenMatching(string subject, bool expected, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
+				string subjectString = subject == "true" ? "True" : "False";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage($"""
 					              Expected that subject
-					              matches expected exactly,
-					              but it differed as $ was {subject} instead of {expected}
+					              is valid JSON which matches expected exactly,
+					              but it differed as $ was {subjectString} instead of {expected}
 					              """);
 			}
 
 			[Theory]
 			[InlineData("42.1", 42.1, true)]
 			[InlineData("1.2", 2.1, false)]
-			public async Task DoubleValue_ShouldSucceedWhenMatching(string json, double expected, bool isMatch)
+			public async Task DoubleValue_ShouldSucceedWhenMatching(string subject, double expected, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage($"""
 					              Expected that subject
-					              matches expected exactly,
-					              but it differed as $ was {json} instead of *
+					              is valid JSON which matches expected exactly,
+					              but it differed as $ was {subject} instead of *
 					              """).AsWildcard();
 			}
 
 			[Theory]
 			[InlineData("42", 42, true)]
 			[InlineData("1", 2, false)]
-			public async Task IntegerValue_ShouldSucceedWhenMatching(string json, int expected, bool isMatch)
+			public async Task IntegerValue_ShouldSucceedWhenMatching(string subject, int expected, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage($"""
 					              Expected that subject
-					              matches expected exactly,
-					              but it differed as $ was {json} instead of {expected}
+					              is valid JSON which matches expected exactly,
+					              but it differed as $ was {subject} instead of {expected}
 					              """);
 			}
 
 			[Theory]
 			[InlineData("null", true)]
 			[InlineData("{}", false)]
-			public async Task NullValue_ShouldSucceedWhenMatching(string json, bool isMatch)
+			public async Task NullValue_ShouldSucceedWhenMatching(string subject, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(null);
+					=> await That(subject).IsValidJsonMatchingExactly(null);
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage($"""
 					              Expected that subject
-					              matches null exactly,
-					              but it differed as $ was object {json} instead of Null
+					              is valid JSON which matches null exactly,
+					              but it differed as $ was object {subject} instead of Null
 					              """);
 			}
 
 			[Theory]
 			[InlineData("\"foo\"", "foo", true)]
 			[InlineData("\"foo\"", "bar", false)]
-			public async Task StringValue_ShouldSucceedWhenMatching(string json, string expected, bool isMatch)
+			public async Task StringValue_ShouldSucceedWhenMatching(string subject, string expected, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage($"""
 					              Expected that subject
-					              matches expected exactly,
-					              but it differed as $ was {json} instead of "{expected}"
+					              is valid JSON which matches expected exactly,
+					              but it differed as $ was {subject} instead of "{expected}"
 					              """);
-			}
-
-			[Fact]
-			public async Task WhenSubjectIsNull_ShouldFail()
-			{
-				JsonElement? subject = null;
-
-				async Task Act()
-					=> await That(subject).MatchesExactly(new object());
-
-				await That(Act).Throws<XunitException>()
-					.WithMessage("""
-					             Expected that subject
-					             matches new object() exactly,
-					             but it was <null>
-					             """);
 			}
 		}
 
@@ -121,29 +95,25 @@ public sealed partial class ThatNullableJsonElement
 		{
 			[Theory]
 			[MemberData(nameof(MatchingArrayValues))]
-			public async Task MatchingValues_ShouldSucceed(string[] expected, string json)
+			public async Task MatchingValues_ShouldSucceed(string[] expected, string subject)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).DoesNotThrow();
 			}
 
 			[Theory]
 			[MemberData(nameof(NotMatchingArrayValues))]
-			public async Task NotMatchingValues_ShouldFail(string[] expected, string json, string errorMessage)
+			public async Task NotMatchingValues_ShouldFail(string[] expected, string subject, string errorMessage)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(expected);
+					=> await That(subject).IsValidJsonMatchingExactly(expected);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage($"""
 					              Expected that subject
-					              matches expected exactly,
+					              is valid JSON which matches expected exactly,
 					              but it differed {errorMessage}
 					              """);
 			}
@@ -151,15 +121,15 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenElementsAreInDifferentOrder_ShouldFail()
 			{
-				JsonElement? subject = FromString("[1, 2]");
+				string subject = "[1, 2]";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly([2, 1]);
+					=> await That(subject).IsValidJsonMatchingExactly([2, 1,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             matches [2, 1] exactly,
+					             is valid JSON which matches [2, 1,] exactly,
 					             but it differed as
 					               $[0] was 1 instead of 2 and
 					               $[1] was 2 instead of 1
@@ -169,15 +139,15 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenExpectedContainsAdditionalElements_ShouldFail()
 			{
-				JsonElement? subject = FromString("[1, 2]");
+				string subject = "[1, 2]";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly([1, 2, 3]);
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2, 3,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             matches [1, 2, 3] exactly,
+					             is valid JSON which matches [1, 2, 3,] exactly,
 					             but it differed as $[2] had missing 3
 					             """);
 			}
@@ -185,15 +155,15 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenSubjectContainsAdditionalElements_ShouldFail()
 			{
-				JsonElement? subject = FromString("[1, 2, 3]");
+				string subject = "[1, 2, 3]";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly([1, 2]);
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             matches [1, 2] exactly,
+					             is valid JSON which matches [1, 2,] exactly,
 					             but it differed as $[2] had unexpected 3
 					             """);
 			}
@@ -201,10 +171,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenSubjectContainsAdditionalElements_WhenIgnoringAdditionalProperties_ShouldSucceed()
 			{
-				JsonElement? subject = FromString("[1, 2, 3]");
+				string subject = "[1, 2, 3]";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly([1, 2], o => o.IgnoringAdditionalProperties());
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2,], o => o.IgnoringAdditionalProperties());
 
 				await That(Act).DoesNotThrow();
 			}
@@ -260,13 +230,11 @@ public sealed partial class ThatNullableJsonElement
 			[Theory]
 			[InlineData("{}", "$.foo was missing")]
 			[InlineData("{\"foo\": 2}")]
-			public async Task ShouldFailIfPropertyIsMissing(string json,
+			public async Task ShouldFailIfPropertyIsMissing(string subject,
 				string? errorMessage = null)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(new
+					=> await That(subject).IsValidJsonMatchingExactly(new
 					{
 						foo = 2,
 					});
@@ -274,7 +242,7 @@ public sealed partial class ThatNullableJsonElement
 				await That(Act).Throws<XunitException>().OnlyIf(errorMessage != null)
 					.WithMessage($$"""
 					               Expected that subject
-					               matches new
+					               is valid JSON which matches new
 					               					{
 					               						foo = 2,
 					               					} exactly,
@@ -285,17 +253,15 @@ public sealed partial class ThatNullableJsonElement
 			[Theory]
 			[InlineData("{}", true)]
 			[InlineData("{\"foo\": 1}", false)]
-			public async Task WhenExpectedIsEmpty_ShouldSucceedWhenJsonIsEmptyObject(string json, bool isMatch)
+			public async Task WhenExpectedIsEmpty_ShouldSucceedWhenJsonIsEmptyObject(string subject, bool isMatch)
 			{
-				JsonElement? subject = FromString(json);
-
 				async Task Act()
-					=> await That(subject).MatchesExactly(new object());
+					=> await That(subject).IsValidJsonMatchingExactly(new object());
 
 				await That(Act).Throws<XunitException>().OnlyIf(!isMatch)
 					.WithMessage("""
 					             Expected that subject
-					             matches new object() exactly,
+					             is valid JSON which matches new object() exactly,
 					             but it differed as $.foo had unexpected 1
 					             """);
 			}
@@ -303,10 +269,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenPropertyHasDifferentValue_ShouldFail()
 			{
-				JsonElement? subject = FromString("{\"bar\": 2}");
+				string subject = "{\"bar\": 2}";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly(new
+					=> await That(subject).IsValidJsonMatchingExactly(new
 					{
 						bar = 3,
 					});
@@ -314,7 +280,7 @@ public sealed partial class ThatNullableJsonElement
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             matches new
+					             is valid JSON which matches new
 					             					{
 					             						bar = 3,
 					             					} exactly,
@@ -325,10 +291,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenSubjectHasAdditionalProperties_ShouldFail()
 			{
-				JsonElement? subject = FromString("{\"foo\": null, \"bar\": 2}");
+				string subject = "{\"foo\": null, \"bar\": 2}";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly(new
+					=> await That(subject).IsValidJsonMatchingExactly(new
 					{
 						bar = 2,
 					});
@@ -336,7 +302,7 @@ public sealed partial class ThatNullableJsonElement
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             matches new
+					             is valid JSON which matches new
 					             					{
 					             						bar = 2,
 					             					} exactly,
@@ -347,10 +313,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenSubjectHasAdditionalProperties_WhenIgnoringAdditionalProperties_ShouldSucceed()
 			{
-				JsonElement? subject = FromString("{\"foo\": null, \"bar\": 2}");
+				string subject = "{\"foo\": null, \"bar\": 2}";
 
 				async Task Act()
-					=> await That(subject).MatchesExactly(new
+					=> await That(subject).IsValidJsonMatchingExactly(new
 					{
 						bar = 2,
 					}, o => o.IgnoringAdditionalProperties());
