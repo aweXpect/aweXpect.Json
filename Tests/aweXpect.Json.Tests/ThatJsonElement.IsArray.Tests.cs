@@ -313,21 +313,21 @@ public sealed partial class ThatJsonElement
 			{
 				JsonElement subject = FromString("""
 				                                 [
-				                                   3, null, true, 1.2, false, "bar"
+				                                   3, null, false, 1.2, false, "bar"
 				                                 ]
 				                                 """);
 
 				async Task Act()
 					=> await That(subject).IsArray(e => e
-						.WithElements(3, true, null, 1.2, false, "bar"));
+						.WithElements(3, false, null, 1.2, false, "bar"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an array and $[0] matches 3 and $[1] matches True and $[2] matches Null and $[3] matches 1.2 and $[4] matches False and $[5] matches "bar",
+					             is an array and $[0] matches 3 and $[1] matches False and $[2] matches Null and $[3] matches 1.2 and $[4] matches False and $[5] matches "bar",
 					             but it differed as
-					               $[1] was Null instead of True and
-					               $[2] was boolean True instead of Null
+					               $[1] was Null instead of False and
+					               $[2] was boolean False instead of Null
 					             """);
 			}
 
