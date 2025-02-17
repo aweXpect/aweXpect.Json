@@ -116,7 +116,7 @@ public sealed partial class ThatJsonString
 		{
 			[Theory]
 			[MemberData(nameof(MatchingArrayValues))]
-			public async Task MatchingValues_ShouldSucceed(object expected, string subject)
+			public async Task MatchingValues_ShouldSucceed(string[] expected, string subject)
 			{
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(expected);
@@ -126,7 +126,7 @@ public sealed partial class ThatJsonString
 
 			[Theory]
 			[MemberData(nameof(NotMatchingArrayValues))]
-			public async Task NotMatchingValues_ShouldFail(object expected, string subject, string errorMessage)
+			public async Task NotMatchingValues_ShouldFail(string[] expected, string subject, string errorMessage)
 			{
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(expected);
@@ -200,45 +200,36 @@ public sealed partial class ThatJsonString
 					             """);
 			}
 
-			public static TheoryData<object, string> MatchingArrayValues
+			public static TheoryData<string[], string> MatchingArrayValues
 				=> new()
 				{
 					{
-						Array.Empty<string>(), "[]"
+						[], "[]"
 					},
 					{
-						Array.Empty<string>(), "[\"foo\"]"
+						[], "[\"foo\"]"
 					},
 					{
-						Array.Empty<int>(), "[]"
-					},
-					{
-						Array.Empty<int>(), "[1, 2]"
-					},
-					{
-						new[]
-						{
+						[
 							"foo", "bar",
-						},
+						],
 						"[\"foo\", \"bar\"]"
 					},
 				};
 
-			public static TheoryData<object, string, string> NotMatchingArrayValues
+			public static TheoryData<string[], string, string> NotMatchingArrayValues
 				=> new()
 				{
 					{
-						new[]
-						{
+						[
 							"foo",
-						},
+						],
 						"[]", "as $[0] had missing \"foo\""
 					},
 					{
-						new[]
-						{
+						[
 							"bar", "foo",
-						},
+						],
 						"[\"foo\", \"bar\"]", """
 						                      as
 						                        $[0] was "foo" instead of "bar" and
