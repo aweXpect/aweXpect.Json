@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace aweXpect.Json.Tests;
+﻿namespace aweXpect.Json.Tests;
 
 public sealed partial class ThatJsonString
 {
@@ -126,12 +124,12 @@ public sealed partial class ThatJsonString
 				string subject = "[1, 2]";
 
 				async Task Act()
-					=> await That(subject).IsValidJsonMatchingExactly([2, 1]);
+					=> await That(subject).IsValidJsonMatchingExactly([2, 1,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is valid JSON which matches [2, 1] exactly,
+					             is valid JSON which matches [2, 1,] exactly,
 					             but it differed as
 					               $[0] was 1 instead of 2 and
 					               $[1] was 2 instead of 1
@@ -144,12 +142,12 @@ public sealed partial class ThatJsonString
 				string subject = "[1, 2]";
 
 				async Task Act()
-					=> await That(subject).IsValidJsonMatchingExactly([1, 2, 3]);
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2, 3,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is valid JSON which matches [1, 2, 3] exactly,
+					             is valid JSON which matches [1, 2, 3,] exactly,
 					             but it differed as $[2] had missing 3
 					             """);
 			}
@@ -160,12 +158,12 @@ public sealed partial class ThatJsonString
 				string subject = "[1, 2, 3]";
 
 				async Task Act()
-					=> await That(subject).IsValidJsonMatchingExactly([1, 2]);
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2,]);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is valid JSON which matches [1, 2] exactly,
+					             is valid JSON which matches [1, 2,] exactly,
 					             but it differed as $[2] had unexpected 3
 					             """);
 			}
@@ -176,7 +174,7 @@ public sealed partial class ThatJsonString
 				string subject = "[1, 2, 3]";
 
 				async Task Act()
-					=> await That(subject).IsValidJsonMatchingExactly([1, 2], o => o.IgnoringAdditionalProperties());
+					=> await That(subject).IsValidJsonMatchingExactly([1, 2,], o => o.IgnoringAdditionalProperties());
 
 				await That(Act).DoesNotThrow();
 			}

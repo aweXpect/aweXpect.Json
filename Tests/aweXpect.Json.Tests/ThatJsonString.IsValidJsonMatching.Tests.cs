@@ -74,6 +74,27 @@ public sealed partial class ThatJsonString
 					              """);
 			}
 
+			[Fact]
+			public async Task ShouldSupportNestedObjects()
+			{
+				string subject = "[{\"foo\": 2}, {\"foo\": 3}, {\"foo\": 4, \"bar\": 2}]";
+
+				await That(subject).IsValidJsonMatching([
+					new
+					{
+						foo = 2,
+					},
+					new
+					{
+						foo = 3,
+					},
+					new
+					{
+						foo = 4,
+					},
+				]);
+			}
+
 			[Theory]
 			[InlineData("\"foo\"", "foo", true)]
 			[InlineData("\"foo\"", "bar", false)]
@@ -169,12 +190,12 @@ public sealed partial class ThatJsonString
 				string subject = "[1, 2, 3]";
 
 				async Task Act()
-					=> await That(subject).IsValidJsonMatching([1, 2], o => o.IgnoringAdditionalProperties(false));
+					=> await That(subject).IsValidJsonMatching([1, 2,], o => o.IgnoringAdditionalProperties(false));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is valid JSON which matches [1, 2] exactly,
+					             is valid JSON which matches [1, 2,] exactly,
 					             but it differed as $[2] had unexpected 3
 					             """);
 			}
