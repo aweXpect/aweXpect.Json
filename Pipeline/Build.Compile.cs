@@ -14,6 +14,7 @@ namespace Build;
 
 partial class Build
 {
+	string BranchName;
 	string SemVer;
 
 	Target CalculateNugetVersion => _ => _
@@ -21,6 +22,7 @@ partial class Build
 		.Executes(() =>
 		{
 			SemVer = GitVersion.SemVer;
+			BranchName = GitVersion.BranchName;
 
 			if (GitHubActions?.IsPullRequest == true)
 			{
