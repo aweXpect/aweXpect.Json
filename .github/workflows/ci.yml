@@ -60,6 +60,29 @@ jobs:
                     path: |
                         ./Artifacts/*
                         ./TestResults/*.trx
+
+    mutation-tests:
+        name: "Mutation tests"
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        env:
+            STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+            DOTNET_NOLOGO: true
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+            -   name: Setup .NET SDKs
+                uses: actions/setup-dotnet@v4
+                with:
+                    dotnet-version: |
+                        8.0.x
+            -   name: Run mutation tests
+                run: ./build.sh MutationTests
+                env:
+                    GithubToken: ${{ secrets.GITHUB_TOKEN }}
     
     benchmarks:
         name: "Benchmarks"
