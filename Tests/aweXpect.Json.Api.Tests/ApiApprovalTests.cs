@@ -1,4 +1,7 @@
-﻿namespace aweXpect.Api.Tests;
+﻿using System.Collections;
+using System.Collections.Generic;
+
+namespace aweXpect.Api.Tests;
 
 /// <summary>
 ///     Whenever a test fails, this means that the public API surface changed.
@@ -7,8 +10,7 @@
 /// </summary>
 public sealed class ApiApprovalTests
 {
-	[Theory]
-	[MemberData(nameof(TargetFrameworksTheoryData))]
+	[TestCaseSource(nameof(TargetFrameworksTheoryData))]
 	public async Task VerifyPublicApiForAweXpectJson(string framework)
 	{
 		const string assemblyName = "aweXpect.Json";
@@ -19,9 +21,9 @@ public sealed class ApiApprovalTests
 		await That(publicApi).IsEqualTo(expectedApi);
 	}
 
-	public static TheoryData<string> TargetFrameworksTheoryData()
+	public static IEnumerable TargetFrameworksTheoryData()
 	{
-		TheoryData<string> theoryData = new();
+		List<string> theoryData = new();
 		foreach (string targetFramework in Helper.GetTargetFrameworks())
 		{
 			theoryData.Add(targetFramework);
