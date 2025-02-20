@@ -1,8 +1,11 @@
 using System.Linq;
 using Nuke.Common;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Xunit;
+using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -12,6 +15,7 @@ namespace Build;
 partial class Build
 {
 	Target UnitTests => _ => _
+		.DependsOn(DotNetFrameworkUnitTests)
 		.DependsOn(DotNetUnitTests);
 
 	Project[] UnitTestProjects =>
@@ -19,15 +23,33 @@ partial class Build
 		Solution.Tests.aweXpect_Json_Tests,
 	];
 
+	Target DotNetFrameworkUnitTests => _ => _
+		.Unlisted()
+		.DependsOn(Compile)
+		.OnlyWhenDynamic(() => EnvironmentInfo.IsWin)
+		.Executes(() =>
+		{
+			string[] testAssemblies = UnitTestProjects
+				.SelectMany(project =>
+					project.Directory.GlobFiles(
+						$"bin/{(Configuration == Configuration.Debug ? "Debug" : "Release")}/net48/*.Tests.dll"))
+				.Select(p => p.ToString())
+				.ToArray();
+
+			Assert.NotEmpty(testAssemblies.ToList());
+
+			Xunit2(s => s
+				.SetFramework("net48")
+				.AddTargetAssemblies(testAssemblies)
+			);
+		});
+
 	Target DotNetUnitTests => _ => _
 		.Unlisted()
 		.DependsOn(Compile)
 		.Executes(() =>
 		{
-			string[] excludedFrameworks =
-				EnvironmentInfo.IsWin
-					? []
-					: ["net48"];
+			string[] excludedFrameworks = ["net48",];
 			DotNetTest(s => s
 					.SetConfiguration(Configuration)
 					.SetProcessEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
