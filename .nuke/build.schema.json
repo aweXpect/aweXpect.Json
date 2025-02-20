@@ -36,6 +36,7 @@
         "CodeAnalysisEnd",
         "CodeCoverage",
         "Compile",
+        "DotNetFrameworkUnitTests",
         "DotNetUnitTests",
         "MutationComment",
         "MutationTestExecution",
