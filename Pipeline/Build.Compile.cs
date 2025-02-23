@@ -3,6 +3,7 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
@@ -15,14 +16,27 @@ namespace Build;
 partial class Build
 {
 	string BranchName;
+	AssemblyVersion MainVersion;
 	string SemVer;
 
 	Target CalculateNugetVersion => _ => _
 		.Unlisted()
 		.Executes(() =>
 		{
+			string preRelease = "-CI";
+			if (GitHubActions == null)
+			{
+				preRelease = "-DEV";
+			}
+			else if (GitHubActions.Ref.StartsWith("refs/tags/", StringComparison.OrdinalIgnoreCase))
+			{
+				int preReleaseIndex = GitHubActions.Ref.IndexOf('-');
+				preRelease = preReleaseIndex > 0 ? GitHubActions.Ref[preReleaseIndex..] : "";
+			}
+
 			SemVer = GitVersion.SemVer;
 			BranchName = GitVersion.BranchName;
+			MainVersion = AssemblyVersion.FromGitVersion(GitVersion, preRelease);
 
 			if (GitHubActions?.IsPullRequest == true)
 			{
@@ -30,7 +44,7 @@ partial class Build
 				Console.WriteLine(
 					$"Branch spec is a pull request. Adding build number {buildNumber}");
 
-				SemVer = string.Join('.', GitVersion.SemVer.Split('.').Take(3).Union([buildNumber]));
+				SemVer = string.Join('.', GitVersion.SemVer.Split('.').Take(3).Union([buildNumber,]));
 			}
 
 			Console.WriteLine($"SemVer = {SemVer}");
@@ -64,29 +78,31 @@ partial class Build
 		.DependsOn(CalculateNugetVersion)
 		.Executes(() =>
 		{
-			string preRelease = "-CI";
-			if (GitHubActions == null)
-			{
-				preRelease = "-DEV";
-			}
-			else if (GitHubActions.Ref.StartsWith("refs/tags/", StringComparison.OrdinalIgnoreCase))
-			{
-				int preReleaseIndex = GitHubActions.Ref.IndexOf('-');
-				preRelease = preReleaseIndex > 0 ? GitHubActions.Ref[preReleaseIndex..] : "";
-			}
-
 			ReportSummary(s => s
-				.WhenNotNull(SemVer, (summary, semVer) => summary
-					.AddPair("Version", semVer + preRelease)));
+				.WhenNotNull(MainVersion, (summary, mainVersion) => summary
+					.AddPair("Version", mainVersion.FileVersion + mainVersion.PreRelease)));
 
 			DotNetBuild(s => s
 				.SetProjectFile(Solution)
 				.SetConfiguration(Configuration)
 				.EnableNoLogo()
 				.EnableNoRestore()
-				.SetVersion(SemVer + preRelease)
-				.SetAssemblyVersion(GitVersion.AssemblySemVer)
-				.SetFileVersion(GitVersion.AssemblySemFileVer)
-				.SetInformationalVersion(GitVersion.InformationalVersion));
+				.SetVersion(MainVersion.FileVersion + MainVersion.PreRelease)
+				.SetAssemblyVersion(MainVersion.FileVersion)
+				.SetFileVersion(MainVersion.FileVersion)
+				.SetInformationalVersion(MainVersion.InformationalVersion));
 		});
+
+	public record AssemblyVersion(string FileVersion, string InformationalVersion, string PreRelease)
+	{
+		public static AssemblyVersion FromGitVersion(GitVersion gitVersion, string preRelease)
+		{
+			if (gitVersion is null)
+			{
+				return null;
+			}
+
+			return new AssemblyVersion(gitVersion.AssemblySemVer, gitVersion.InformationalVersion, preRelease);
+		}
+	}
 }
