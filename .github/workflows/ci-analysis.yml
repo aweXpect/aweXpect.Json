@@ -1,6 +1,7 @@
 name: CI-Analysis
 
 on:
+    workflow_dispatch:
     workflow_run:
         workflows: [ "CI" ]
         types:
@@ -59,8 +60,8 @@ jobs:
             DOTNET_NOLOGO: true
         steps:
             -   uses: actions/checkout@v4
-                ref: ${{ github.event.workflow_run.head_branch }}
                 with:
+                    ref: ${{ github.event.workflow_run.head_branch }}
                     fetch-depth: 0
             -   name: Setup .NET SDKs
                 uses: actions/setup-dotnet@v4
