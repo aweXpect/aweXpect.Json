@@ -133,7 +133,6 @@ partial class Build
 
 	Target MutationTestDashboard => _ => _
 		.After(MutationTestExecution)
-		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
 		.Executes(async () =>
 		{
 			await DownloadArtifact("MutationTests");
