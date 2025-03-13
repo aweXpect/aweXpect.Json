@@ -46,7 +46,6 @@ partial class Build
 		});
 
 	Target BenchmarkComment => _ => _
-		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
 		.Executes(async () =>
 		{
 			await DownloadArtifact("Benchmarks");
