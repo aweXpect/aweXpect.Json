@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using Nuke.Common;
 using Nuke.Common.IO;
@@ -10,6 +12,7 @@ using Nuke.Common.Tools.DotNet;
 using Octokit;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using ProductHeaderValue = Octokit.ProductHeaderValue;
 using Project = Nuke.Common.ProjectModel.Project;
 
 // ReSharper disable UnusedMember.Local
@@ -55,6 +58,7 @@ partial class Build
 					branchName = "release/" + version;
 					Log.Information("Use release branch analysis for '{BranchName}'", branchName);
 				}
+				File.WriteAllText(ArtifactsDirectory / "BranchName.txt", branchName);
 
 				string configText = $$"""
 				                      {
@@ -83,9 +87,8 @@ partial class Build
 				File.WriteAllText(configFile, configText);
 				Log.Debug($"Created '{configFile}':{Environment.NewLine}{configText}");
 
-				string arguments = IsServerBuild
-					? $"-f \"{configFile}\" -O \"{strykerOutputDirectory}\" -r \"Markdown\" -r \"Dashboard\" -r \"cleartext\""
-					: $"-f \"{configFile}\" -O \"{strykerOutputDirectory}\" -r \"Markdown\" -r \"cleartext\"";
+				string arguments =
+					$"-f \"{configFile}\" -O \"{strykerOutputDirectory}\" -r \"Markdown\" -r \"cleartext\" -r \"json\"";
 
 				string executable = EnvironmentInfo.IsWin ? "dotnet-stryker.exe" : "dotnet-stryker";
 				IProcess process = ProcessTasks.StartProcess(
@@ -105,8 +108,8 @@ partial class Build
 
 	Target MutationComment => _ => _
 		.After(MutationTestExecution)
-		.OnlyWhenDynamic(() => GitHubActions.IsPullRequest)
-		.Executes(async () =>
+		.OnlyWhenDynamic(() => GitHubActions?.IsPullRequest == true)
+		.Executes(() =>
 		{
 			int? prId = GitHubActions.PullRequestNumber;
 			Log.Debug("Pull request number: {PullRequestId}", prId);
@@ -120,14 +123,48 @@ partial class Build
 			              + $"[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FaweXpect%2FaweXpect.Json%2Fpull/{prId}/merge)](https://dashboard.stryker-mutator.io/reports/github.com/aweXpect/aweXpect.Json/pull/{prId}/merge)"
 			              + Environment.NewLine
 			              + MutationCommentBody;
+			File.WriteAllText(ArtifactsDirectory / "PR_Comment.md", body);
 
 			if (prId != null)
+			{
+				File.WriteAllText("PR.txt", prId.Value.ToString());
+			}
+		});
+
+	Target MutationTestDashboard => _ => _
+		.After(MutationTestExecution)
+		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
+		.Executes(async () =>
+		{
+			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
+			Log.Debug("Pull request number: {PullRequestId}", prNumber);
+
+			Dictionary<Project, Project[]> projects = new()
+			{
+				{
+					Solution.aweXpect_Json, [Solution.Tests.aweXpect_Json_Tests,]
+				},
+			};
+			var apiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
+			var branchName = File.ReadAllText(ArtifactsDirectory / "BranchName.txt");
+			foreach (var project in projects)
+			{
+				var reportComment = File.ReadAllText(ArtifactsDirectory / "Stryker" / "reports" / "mutation-report.json");
+				using var client = new HttpClient();
+				client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+				// https://stryker-mutator.io/docs/General/dashboard/#send-a-report-via-curl
+				await client.PutAsync($"https://dashboard.stryker-mutator.io/api/reports/github.com/aweXpect/aweXpect.Json/{branchName}?module={project.Key.Name}",
+						new StringContent(reportComment, new MediaTypeHeaderValue("application/json")));
+			}
+
+			string body = File.ReadAllText(ArtifactsDirectory / "PR_Comment.md");
+			if (int.TryParse(prNumber, out int prId))
 			{
 				GitHubClient gitHubClient = new(new ProductHeaderValue("Nuke"));
 				Credentials tokenAuth = new(GithubToken);
 				gitHubClient.Credentials = tokenAuth;
 				IReadOnlyList<IssueComment> comments =
-					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId.Value);
+					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId);
 				long? commentId = null;
 				Log.Information($"Found {comments.Count} comments");
 				foreach (IssueComment comment in comments)
@@ -142,7 +179,7 @@ partial class Build
 				if (commentId == null)
 				{
 					Log.Information($"Create comment:\n{body}");
-					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId.Value, body);
+					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId, body);
 				}
 				else
 				{

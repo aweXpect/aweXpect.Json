@@ -39,6 +39,7 @@
         "DotNetFrameworkUnitTests",
         "DotNetUnitTests",
         "MutationComment",
+        "MutationTestDashboard",
         "MutationTestExecution",
         "MutationTests",
         "Pack",

@@ -37,24 +37,28 @@ partial class Build
 		{
 			string fileContent = await File.ReadAllTextAsync(ArtifactsDirectory / "Benchmarks" / "results" /
 			                                                 "aweXpect.Json.Benchmarks.HappyCaseBenchmarks-report-github.md");
+			if (GitHubActions.PullRequestNumber != null)
+			{
+				File.WriteAllText(ArtifactsDirectory / "PR.txt", GitHubActions.PullRequestNumber.ToString());
+			}
+
 			Log.Information("Report:\n {FileContent}", fileContent);
 		});
 
 	Target BenchmarkComment => _ => _
-		.After(BenchmarkDotNet)
-		.OnlyWhenDynamic(() => GitHubActions.IsPullRequest)
+		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
 		.Executes(async () =>
 		{
+			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
 			string body = CreateCommentBody();
-			int? prId = GitHubActions.PullRequestNumber;
-			Log.Debug("Pull request number: {PullRequestId}", prId);
-			if (prId != null)
+			Log.Debug("Pull request number: {PullRequestId}", prNumber);
+			if (int.TryParse(prNumber, out int prId))
 			{
 				GitHubClient gitHubClient = new(new ProductHeaderValue("Nuke"));
 				Credentials tokenAuth = new(GithubToken);
 				gitHubClient.Credentials = tokenAuth;
 				IReadOnlyList<IssueComment> comments =
-					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId.Value);
+					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId);
 				long? commentId = null;
 				Log.Information($"Found {comments.Count} comments");
 				foreach (IssueComment comment in comments)
@@ -69,7 +73,7 @@ partial class Build
 				if (commentId == null)
 				{
 					Log.Information($"Create comment:\n{body}");
-					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId.Value, body);
+					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId, body);
 				}
 				else
 				{
@@ -81,8 +85,7 @@ partial class Build
 
 	Target Benchmarks => _ => _
 		.DependsOn(BenchmarkDotNet)
-		.DependsOn(BenchmarkResult)
-		.DependsOn(BenchmarkComment);
+		.DependsOn(BenchmarkResult);
 
 	string CreateCommentBody()
 	{
