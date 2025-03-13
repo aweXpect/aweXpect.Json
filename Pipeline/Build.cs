@@ -25,7 +25,8 @@ partial class Build : NukeBuild
 	[Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
 	readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-	[Parameter("Github Token")] readonly string GithubToken;
+	[Parameter("Github Token")]
+	readonly string GithubToken;
 
 	[Required] [GitVersion(Framework = "net8.0", NoCache = true, NoFetch = true)] readonly GitVersion GitVersion;
 
@@ -67,15 +68,15 @@ partial class Build : NukeBuild
 				string name = artifact.GetProperty("name").GetString()!;
 				if (name.Equals(artifactName, StringComparison.OrdinalIgnoreCase))
 				{
-					int artifactId = artifact.GetProperty("id").GetInt32();
+					long artifactId = artifact.GetProperty("id").GetInt64();
 					HttpResponseMessage fileResponse = await client.GetAsync(
 						$"https://api.github.com/repos/aweXpect/aweXpect.Json/actions/artifacts/{artifactId}/zip");
 					if (fileResponse.IsSuccessStatusCode)
 					{
 						using ZipArchive archive = new(await fileResponse.Content.ReadAsStreamAsync());
-						archive.ExtractToDirectory(RootDirectory);
+						archive.ExtractToDirectory(ArtifactsDirectory);
 						Log.Information(
-							$"Downloaded artifact #{artifactId} with {archive.Entries.Count} entries:\n - {string.Join("\n - ", archive.Entries.Select(entry => $"{entry.Name} ({entry.Length})"))}");
+							$"Extracted artifact #{artifactId} with {archive.Entries.Count} entries to {ArtifactsDirectory}:\n - {string.Join("\n - ", archive.Entries.Select(entry => $"{entry.Name} ({entry.Length})"))}");
 					}
 					else
 					{

@@ -127,7 +127,7 @@ partial class Build
 
 			if (prId != null)
 			{
-				File.WriteAllText("PR.txt", prId.Value.ToString());
+				File.WriteAllText(ArtifactsDirectory / "PR.txt", prId.Value.ToString());
 			}
 		});
 
