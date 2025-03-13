@@ -63,12 +63,8 @@ jobs:
 
     mutation-tests:
         name: "Mutation tests"
-        if: ${{ github.actor != 'dependabot[bot]' }}
         runs-on: ubuntu-latest
-        permissions:
-            pull-requests: write
         env:
-            STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
             DOTNET_NOLOGO: true
         steps:
             -   uses: actions/checkout@v4
@@ -81,16 +77,18 @@ jobs:
                         8.0.x
             -   name: Run mutation tests
                 run: ./build.sh MutationTests
-                env:
-                    GithubToken: ${{ secrets.GITHUB_TOKEN }}
-    
+            -   name: Upload artifacts
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: MutationTests
+                    path: |
+                        ./Artifacts/*
+
     benchmarks:
         name: "Benchmarks"
         if: ${{ github.actor != 'dependabot[bot]' }}
         runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            pull-requests: write
         env:
             DOTNET_NOLOGO: true
         steps:
@@ -104,8 +102,13 @@ jobs:
                         8.0.x
             -   name: Run benchmarks
                 run: ./build.sh Benchmarks
-                env:
-                    GithubToken: ${{ secrets.GITHUB_TOKEN }}
+            -   name: Upload artifacts
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: Benchmarks
+                    path: |
+                        ./Artifacts/*
     
     static-code-analysis:
         name: "Static code analysis"
