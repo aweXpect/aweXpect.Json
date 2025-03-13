@@ -1,0 +1,91 @@
+name: CI-Analysis
+
+on:
+    workflow_run:
+        workflows: [ "CI" ]
+        types:
+            - completed
+
+jobs:
+    mutation-tests:
+        name: "Mutation tests"
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        env:
+            STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+        steps:
+            - name: 'Download artifact'
+              uses: actions/github-script@v3.1.0
+              with:
+                  script: |
+                      var artifacts = await github.actions.listWorkflowRunArtifacts({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         run_id: ${{github.event.workflow_run.id }},
+                      });
+                      var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "MutationTests"
+                      })[0];
+                      var download = await github.actions.downloadArtifact({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         artifact_id: matchArtifact.id,
+                         archive_format: 'zip',
+                      });
+                      var fs = require('fs');
+                      fs.writeFileSync('${{github.workspace}}/artifacts.zip', Buffer.from(download.data));
+            -   run: unzip artifacts.zip
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+            -   name: Setup .NET SDKs
+                uses: actions/setup-dotnet@v4
+                with:
+                    dotnet-version: |
+                        8.0.x
+            -   name: Run mutation tests
+                run: ./build.sh MutationTestDashboard
+                env:
+                    GithubToken: ${{ secrets.GITHUB_TOKEN }}
+    
+    benchmarks:
+        name: "Benchmarks"
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: 'Download artifact'
+              uses: actions/github-script@v3.1.0
+              with:
+                  script: |
+                      var artifacts = await github.actions.listWorkflowRunArtifacts({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         run_id: ${{github.event.workflow_run.id }},
+                      });
+                      var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+                        return artifact.name == "Benchmarks"
+                      })[0];
+                      var download = await github.actions.downloadArtifact({
+                         owner: context.repo.owner,
+                         repo: context.repo.repo,
+                         artifact_id: matchArtifact.id,
+                         archive_format: 'zip',
+                      });
+                      var fs = require('fs');
+                      fs.writeFileSync('${{github.workspace}}/artifacts.zip', Buffer.from(download.data));
+            -   run: unzip artifacts.zip
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+            -   name: Setup .NET SDKs
+                uses: actions/setup-dotnet@v4
+                with:
+                    dotnet-version: |
+                        8.0.x
+            -   name: Create benchmark comment
+                run: ./build.sh BenchmarkComment
+                env:
+                    GithubToken: ${{ secrets.GITHUB_TOKEN }}  
