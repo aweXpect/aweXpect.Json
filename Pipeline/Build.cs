@@ -67,7 +67,7 @@ partial class Build : NukeBuild
 				string name = artifact.GetProperty("name").GetString()!;
 				if (name.Equals(artifactName, StringComparison.OrdinalIgnoreCase))
 				{
-					string artifactId = artifact.GetProperty("id").GetString()!;
+					int artifactId = artifact.GetProperty("id").GetInt32();
 					HttpResponseMessage fileResponse = await client.GetAsync(
 						$"https://api.github.com/repos/aweXpect/aweXpect.Json/actions/artifacts/{artifactId}/zip");
 					if (fileResponse.IsSuccessStatusCode)
