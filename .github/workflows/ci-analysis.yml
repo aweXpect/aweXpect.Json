@@ -50,23 +50,3 @@ jobs:
                 env:
                     GithubToken: ${{ secrets.GITHUB_TOKEN }}
                     WorkflowRunId: ${{ github.event.workflow_run.id }}
-    
-    static-code-analysis:
-        name: "Static code analysis"
-        runs-on: ubuntu-latest
-        env:
-            REPORTGENERATOR_LICENSE: ${{ secrets.REPORTGENERATOR_LICENSE }}
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            DOTNET_NOLOGO: true
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.event.workflow_run.head_branch }}
-                    fetch-depth: 0
-            -   name: Setup .NET SDKs
-                uses: actions/setup-dotnet@v4
-                with:
-                    dotnet-version: |
-                        8.0.x
-            -   name: Run sonarcloud analysis
-                run: ./build.sh CodeAnalysis
