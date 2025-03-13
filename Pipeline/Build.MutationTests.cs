@@ -136,8 +136,6 @@ partial class Build
 		.Executes(async () =>
 		{
 			await DownloadArtifact("MutationTests");
-			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
-			Log.Debug("Pull request number: {PullRequestId}", prNumber);
 
 			Dictionary<Project, Project[]> projects = new()
 			{
@@ -157,34 +155,39 @@ partial class Build
 						new StringContent(reportComment, new MediaTypeHeaderValue("application/json")));
 			}
 
-			string body = File.ReadAllText(ArtifactsDirectory / "PR_Comment.md");
-			if (int.TryParse(prNumber, out int prId))
+			if (File.Exists(ArtifactsDirectory / "PR.txt"))
 			{
-				GitHubClient gitHubClient = new(new ProductHeaderValue("Nuke"));
-				Credentials tokenAuth = new(GithubToken);
-				gitHubClient.Credentials = tokenAuth;
-				IReadOnlyList<IssueComment> comments =
-					await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId);
-				long? commentId = null;
-				Log.Information($"Found {comments.Count} comments");
-				foreach (IssueComment comment in comments)
+				string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
+				Log.Debug("Pull request number: {PullRequestId}", prNumber);
+				string body = File.ReadAllText(ArtifactsDirectory / "PR_Comment.md");
+				if (int.TryParse(prNumber, out int prId))
 				{
-					if (comment.Body.Contains("## :alien: Mutation Results"))
+					GitHubClient gitHubClient = new(new ProductHeaderValue("Nuke"));
+					Credentials tokenAuth = new(GithubToken);
+					gitHubClient.Credentials = tokenAuth;
+					IReadOnlyList<IssueComment> comments =
+						await gitHubClient.Issue.Comment.GetAllForIssue("aweXpect", "aweXpect.Json", prId);
+					long? commentId = null;
+					Log.Information($"Found {comments.Count} comments");
+					foreach (IssueComment comment in comments)
 					{
-						Log.Information($"Found comment: {comment.Body}");
-						commentId = comment.Id;
+						if (comment.Body.Contains("## :alien: Mutation Results"))
+						{
+							Log.Information($"Found comment: {comment.Body}");
+							commentId = comment.Id;
+						}
 					}
-				}
 
-				if (commentId == null)
-				{
-					Log.Information($"Create comment:\n{body}");
-					await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId, body);
-				}
-				else
-				{
-					Log.Information($"Update comment:\n{body}");
-					await gitHubClient.Issue.Comment.Update("aweXpect", "aweXpect.Json", commentId.Value, body);
+					if (commentId == null)
+					{
+						Log.Information($"Create comment:\n{body}");
+						await gitHubClient.Issue.Comment.Create("aweXpect", "aweXpect.Json", prId, body);
+					}
+					else
+					{
+						Log.Information($"Update comment:\n{body}");
+						await gitHubClient.Issue.Comment.Update("aweXpect", "aweXpect.Json", commentId.Value, body);
+					}
 				}
 			}
 		});
