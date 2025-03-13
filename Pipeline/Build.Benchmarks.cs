@@ -49,6 +49,7 @@ partial class Build
 		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
 		.Executes(async () =>
 		{
+			await DownloadArtifact("Benchmarks");
 			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
 			string body = CreateCommentBody();
 			Log.Debug("Pull request number: {PullRequestId}", prNumber);

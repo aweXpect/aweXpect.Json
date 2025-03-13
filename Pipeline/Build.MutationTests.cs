@@ -136,6 +136,7 @@ partial class Build
 		.OnlyWhenStatic(() => File.Exists(ArtifactsDirectory / "PR.txt"))
 		.Executes(async () =>
 		{
+			await DownloadArtifact("MutationTests");
 			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
 			Log.Debug("Pull request number: {PullRequestId}", prNumber);
 
