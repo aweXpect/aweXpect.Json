@@ -25,8 +25,7 @@ partial class Build : NukeBuild
 	[Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
 	readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-	[Parameter("Github Token")]
-	readonly string GithubToken;
+	[Parameter("Github Token")] readonly string GithubToken;
 
 	[Required] [GitVersion(Framework = "net8.0", NoCache = true, NoFetch = true)] readonly GitVersion GitVersion;
 
@@ -43,8 +42,8 @@ partial class Build : NukeBuild
 		string runId = Environment.GetEnvironmentVariable("WorkflowRunId");
 		if (string.IsNullOrEmpty(runId))
 		{
-			throw new InvalidOperationException(
-				"When downloading an artifact you have to specify the 'WorkflowRunId' environment variable.");
+			Log.Information("Skip downloading artifacts, because no 'WorkflowRunId' environment variable is set.");
+			return;
 		}
 
 		using HttpClient client = new();

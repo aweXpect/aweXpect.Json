@@ -37,18 +37,23 @@ partial class Build
 		{
 			string fileContent = await File.ReadAllTextAsync(ArtifactsDirectory / "Benchmarks" / "results" /
 			                                                 "aweXpect.Json.Benchmarks.HappyCaseBenchmarks-report-github.md");
-			if (GitHubActions.PullRequestNumber != null)
+			Log.Information("Report:\n {FileContent}", fileContent);
+			if (GitHubActions?.IsPullRequest == true)
 			{
 				File.WriteAllText(ArtifactsDirectory / "PR.txt", GitHubActions.PullRequestNumber.ToString());
 			}
-
-			Log.Information("Report:\n {FileContent}", fileContent);
 		});
 
 	Target BenchmarkComment => _ => _
 		.Executes(async () =>
 		{
 			await DownloadArtifact("Benchmarks");
+			if (!File.Exists(ArtifactsDirectory / "PR.txt"))
+			{
+				Log.Information("Skip writing a comment, as no PR number was specified.");
+				return;
+			}
+
 			string prNumber = File.ReadAllText(ArtifactsDirectory / "PR.txt");
 			string body = CreateCommentBody();
 			Log.Debug("Pull request number: {PullRequestId}", prNumber);
