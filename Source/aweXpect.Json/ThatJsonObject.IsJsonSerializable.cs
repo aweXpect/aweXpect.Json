@@ -141,7 +141,7 @@ public static class ThatJsonObject
 			{
 				stringBuilder.Append(it).Append(" was <null>");
 			}
-			else if (_actual is not T typedSubject)
+			else if (_actual is not T)
 			{
 				stringBuilder.Append(it).Append(" was not assignable to ");
 				Formatter.Format(stringBuilder, typeof(T));
