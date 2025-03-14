@@ -404,7 +404,7 @@ internal class JsonValidation : IJsonObjectResult,
 		return this;
 	}
 
-	private string And(ExpectationGrammars grammars) => grammars.IsNegated() ? " or " : " and ";
+	private static string And(ExpectationGrammars grammars) => grammars.IsNegated() ? " or " : " and ";
 
 	private JsonValidation An(JsonValueKind kind, Action<JsonValidation> expectation)
 	{
