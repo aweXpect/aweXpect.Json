@@ -1,7 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Source\aweXpect.Json\aweXpect.Json.csproj"/>
+		<ProjectReference Include="..\..\Source\aweXpect.Json\aweXpect.Json.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="aweXpect.Core" />
 	</ItemGroup>
 
 </Project>
