@@ -10,11 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet"/>
+		<PackageReference Include="BenchmarkDotNet" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Source\aweXpect.Json\aweXpect.Json.csproj"/>
+
+	  <PackageReference Include="aweXpect.Core" VersionOverride="2.15.2" />
+		<ProjectReference Include="..\..\Source\aweXpect.Json\aweXpect.Json.csproj" />
 	</ItemGroup>
 
 </Project>
