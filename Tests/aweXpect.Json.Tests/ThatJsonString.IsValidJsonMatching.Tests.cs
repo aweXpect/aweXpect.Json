@@ -1,4 +1,6 @@
-﻿namespace aweXpect.Json.Tests;
+﻿using aweXpect.Equivalency;
+
+namespace aweXpect.Json.Tests;
 
 public sealed partial class ThatJsonString
 {
@@ -298,6 +300,20 @@ public sealed partial class ThatJsonString
 			{
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(new object());
+
+				await That(Act).DoesNotThrow();
+			}
+
+			[Fact]
+			public async Task WhenPropertyMatchesItIs_ShouldSucceed()
+			{
+				string subject = "{\"bar\": 2}";
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						bar = It.Is<int>().That.IsGreaterThan(1),
+					});
 
 				await That(Act).DoesNotThrow();
 			}
