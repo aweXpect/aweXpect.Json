@@ -58,10 +58,12 @@ internal sealed class JsonMatchType(JsonOptions options) : IStringMatchType
 			{
 				using JsonDocument actualJson = JsonDocument.Parse(actual, options.DocumentOptions);
 
+				// TODO
 				_comparisonResult = JsonElementValidator.Compare(
 					actualJson.RootElement,
 					expectedJson.RootElement,
-					options);
+					options,
+					null).GetAwaiter().GetResult();
 				return !_comparisonResult.HasError;
 			}
 			catch (JsonException e)

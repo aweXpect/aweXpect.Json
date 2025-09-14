@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using aweXpect.Customization;
+using aweXpect.Equivalency;
+using aweXpect.Results;
 
 namespace aweXpect.Json;
 
@@ -12,43 +15,54 @@ namespace aweXpect.Json;
 /// </summary>
 internal static class JsonElementValidator
 {
-	public static JsonComparisonResult Compare(
+	public static Task<JsonComparisonResult> Compare(
 		JsonElement actualElement,
 		JsonElement expectedElement,
-		JsonOptions options)
-		=> Compare(new JsonComparisonResult(), "$", actualElement, expectedElement, options);
+		JsonOptions options,
+		ExpectationJsonConverter? converter)
+		=> Compare(new JsonComparisonResult(), "$", actualElement, expectedElement, options, converter);
 
-	public static JsonComparisonResult Compare(
+	public static Task<JsonComparisonResult> Compare(
 		string basePath,
 		JsonElement actualElement,
 		JsonElement expectedElement,
-		JsonOptions options)
-		=> Compare(new JsonComparisonResult(), basePath, actualElement, expectedElement, options);
+		JsonOptions options,
+		ExpectationJsonConverter? converter)
+		=> Compare(new JsonComparisonResult(), basePath, actualElement, expectedElement, options, converter);
 
-	private static JsonComparisonResult Compare(
+	private static async Task<JsonComparisonResult> Compare(
 		this JsonComparisonResult result,
 		string path,
 		JsonElement actualElement,
 		JsonElement expectedElement,
-		JsonOptions options)
-		=> actualElement.ValueKind switch
+		JsonOptions options,
+		ExpectationJsonConverter? converter)
+	{
+		if (await result.TryMatchExpectation(path, actualElement, expectedElement, converter))
 		{
-			JsonValueKind.Array => result.CompareJsonArray(path, actualElement, expectedElement, options),
+			return result;
+		}
+		
+		return actualElement.ValueKind switch
+		{
+			JsonValueKind.Array => await result.CompareJsonArray(path, actualElement, expectedElement, options, converter),
 			JsonValueKind.False => result.CompareJsonBoolean(JsonValueKind.False, path, actualElement, expectedElement),
 			JsonValueKind.True => result.CompareJsonBoolean(JsonValueKind.True, path, actualElement, expectedElement),
 			JsonValueKind.Null => result.CompareJsonNull(path, actualElement, expectedElement),
 			JsonValueKind.Number => result.CompareJsonNumber(path, actualElement, expectedElement),
 			JsonValueKind.String => result.CompareJsonString(path, actualElement, expectedElement),
-			JsonValueKind.Object => result.CompareJsonObject(path, actualElement, expectedElement, options),
+			JsonValueKind.Object => await result.CompareJsonObject(path, actualElement, expectedElement, options, converter),
 			_ => throw new ArgumentOutOfRangeException($"Unsupported JsonValueKind: {actualElement.ValueKind}"),
 		};
+	}
 
-	private static JsonComparisonResult CompareJsonArray(
+	private static async Task<JsonComparisonResult> CompareJsonArray(
 		this JsonComparisonResult result,
 		string path,
 		JsonElement actualElement,
 		JsonElement expectedElement,
-		JsonOptions options)
+		JsonOptions options,
+		ExpectationJsonConverter? converter)
 	{
 		if (expectedElement.ValueKind != JsonValueKind.Array)
 		{
@@ -67,7 +81,7 @@ internal static class JsonElementValidator
 			}
 
 			JsonElement actualArrayElement = actualElement[index];
-			result.Compare(memberPath, actualArrayElement, expectedArrayElement, options);
+			await result.Compare(memberPath, actualArrayElement, expectedArrayElement, options, converter);
 		}
 
 		if (!options.IgnoreAdditionalProperties)
@@ -145,18 +159,18 @@ internal static class JsonElementValidator
 			}
 
 			result.AddError(path, $"was {Format(actualElement)} instead of {Format(expectedElement)}");
-			return result;
 		}
 
 		return result;
 	}
 
-	private static JsonComparisonResult CompareJsonObject(
+	private static async Task<JsonComparisonResult> CompareJsonObject(
 		this JsonComparisonResult result,
 		string path,
 		JsonElement actualElement,
 		JsonElement expectedElement,
-		JsonOptions options)
+		JsonOptions options,
+		ExpectationJsonConverter? converter)
 	{
 		if (expectedElement.ValueKind != JsonValueKind.Object)
 		{
@@ -173,7 +187,7 @@ internal static class JsonElementValidator
 				continue;
 			}
 
-			result.Compare(memberPath, property, item.Value, options);
+			await result.Compare(memberPath, property, item.Value, options, converter);
 		}
 
 		if (!options.IgnoreAdditionalProperties)
@@ -245,6 +259,48 @@ internal static class JsonElementValidator
 		return includeType
 			? $"{GetKindName(jsonElement.ValueKind)} {jsonElement}"
 			: jsonElement.ToString();
+	}
+
+	private static async Task<bool> TryMatchExpectation(
+		this JsonComparisonResult result,
+		string path,
+		JsonElement actualElement,
+		JsonElement expectedElement,
+		ExpectationJsonConverter? converter)
+	{
+		static string ConsolidateFailureBuilder(StringBuilder builder)
+		{
+			var error = builder.ToString().TrimStart();
+			if (error.StartsWith("It "))
+			{
+				return error.Substring("It ".Length);
+			}
+
+			return error;
+		}
+		if (converter?.TryGetExpectation(expectedElement, out Expectation? expectation) == true)
+		{
+			StringBuilder? failureBuilder = new();
+
+			if (actualElement.TryGetInt32(out int v3))
+			{
+				if (!await EquivalencyComparison.Compare(v3, expectation,
+					    Customize.aweXpect.Equivalency().Get().DefaultEquivalencyOptions, failureBuilder))
+				{
+					result.AddError(path, ConsolidateFailureBuilder(failureBuilder));
+				}
+			}
+			else if (actualElement.TryGetDouble(out double v4) &&
+			         !await EquivalencyComparison.Compare(v4, expectation,
+				         Customize.aweXpect.Equivalency().Get().DefaultEquivalencyOptions, failureBuilder))
+			{
+				result.AddError(path, ConsolidateFailureBuilder(failureBuilder));
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 

@@ -305,17 +305,25 @@ public sealed partial class ThatJsonString
 			}
 
 			[Fact]
-			public async Task WhenPropertyMatchesItIs_ShouldSucceed()
+			public async Task WhenPropertyDoesNotMatchItIs_ShouldFail()
 			{
 				string subject = "{\"bar\": 2}";
 
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(new
 					{
-						bar = It.Is<int>().That.IsGreaterThan(1),
+						bar = It.Is<int>().That.IsGreaterThan(3),
 					});
 
-				await That(Act).DoesNotThrow();
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						bar = It.Is<int>().That.IsGreaterThan(3),
+					             					},
+					             but it differed as $.bar was 2
+					             """);
 			}
 
 			[Fact]
@@ -338,6 +346,20 @@ public sealed partial class ThatJsonString
 					             					},
 					             but it differed as $.bar was 2 instead of 3
 					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyMatchesItIs_ShouldSucceed()
+			{
+				string subject = "{\"bar\": 2}";
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						bar = It.Is<int>().That.IsGreaterThan(1),
+					});
+
+				await That(Act).DoesNotThrow();
 			}
 
 			[Fact]

@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using aweXpect.Core;
 using aweXpect.Core.Constraints;
 using aweXpect.Json;
@@ -18,11 +20,11 @@ public static partial class ThatNullableJsonElement
 		string expectedExpression,
 		JsonOptions options)
 		: ConstraintResult.WithValue<JsonElement?>(grammars),
-			IValueConstraint<JsonElement?>
+			IAsyncConstraint<JsonElement?>
 	{
 		private JsonElementValidator.JsonComparisonResult? _comparisonResult;
 
-		public ConstraintResult IsMetBy(JsonElement? actual)
+		public async Task<ConstraintResult> IsMetBy(JsonElement? actual, CancellationToken cancellationToken)
 		{
 			Actual = actual;
 			if (actual == null)
@@ -31,13 +33,17 @@ public static partial class ThatNullableJsonElement
 				return this;
 			}
 
+			var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
+			var converter = new ExpectationJsonConverter();
+			serializerOptions.Converters.Add(converter);
 			using JsonDocument expectedDocument =
-				JsonDocument.Parse(JsonSerializer.Serialize(expected), options.DocumentOptions);
+				JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), options.DocumentOptions);
 
-			_comparisonResult = JsonElementValidator.Compare(
+			_comparisonResult = await JsonElementValidator.Compare(
 				actual.Value,
 				expectedDocument.RootElement,
-				options);
+				options,
+				converter);
 
 			Outcome = _comparisonResult.HasError ? Outcome.Failure : Outcome.Success;
 			return this;

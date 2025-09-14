@@ -116,13 +116,17 @@ internal class JsonValidation : IJsonObjectResult,
 
 			if (currentElement != null)
 			{
+				var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
+				var converter = new ExpectationJsonConverter();
+				serializerOptions.Converters.Add(converter);
 				using JsonDocument expectedDocument =
-					JsonDocument.Parse(JsonSerializer.Serialize(expectedValue), _options.DocumentOptions);
+					JsonDocument.Parse(JsonSerializer.Serialize(expectedValue, serializerOptions), _options.DocumentOptions);
 				JsonElementValidator.JsonComparisonResult comparisonResult = JsonElementValidator.Compare(
 					CurrentPath,
 					currentElement.Value,
 					expectedDocument.RootElement,
-					_options);
+					_options,
+					converter).GetAwaiter().GetResult();
 
 				if (comparisonResult.HasError)
 				{
@@ -334,13 +338,17 @@ internal class JsonValidation : IJsonObjectResult,
 			return this;
 		}
 
+		var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
+		var converter = new ExpectationJsonConverter();
+		serializerOptions.Converters.Add(converter);
 		using JsonDocument expectedDocument =
-			JsonDocument.Parse(JsonSerializer.Serialize(expected), _options.DocumentOptions);
+			JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), _options.DocumentOptions);
 		JsonElementValidator.JsonComparisonResult comparisonResult = JsonElementValidator.Compare(
 			CurrentPath,
 			currentElement.Value,
 			expectedDocument.RootElement,
-			_options);
+			_options,
+			converter).GetAwaiter().GetResult();
 
 		if (comparisonResult.HasError)
 		{
@@ -386,14 +394,18 @@ internal class JsonValidation : IJsonObjectResult,
 			_currentPath.Pop();
 			return this;
 		}
-
+		;
+		var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
+		var converter = new ExpectationJsonConverter();
+		serializerOptions.Converters.Add(converter);
 		using JsonDocument expectedDocument =
-			JsonDocument.Parse(JsonSerializer.Serialize(expected), _options.DocumentOptions);
+			JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), _options.DocumentOptions);
 		JsonElementValidator.JsonComparisonResult comparisonResult = JsonElementValidator.Compare(
 			CurrentPath,
 			currentElement.Value,
 			expectedDocument.RootElement,
-			_options);
+			_options,
+			converter).GetAwaiter().GetResult();
 
 		if (comparisonResult.HasError)
 		{
