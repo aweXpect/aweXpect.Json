@@ -351,12 +351,24 @@ public sealed partial class ThatJsonString
 			[Fact]
 			public async Task WhenPropertyMatchesItIs_ShouldSucceed()
 			{
-				string subject = "{\"bar\": 2}";
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null
+				                 }
+				                 """;
 
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(new
 					{
+						foo = It.Is<string>().That.EndsWith("yz"),
 						bar = It.Is<int>().That.IsGreaterThan(1),
+						baz1 = It.Is<bool>().That.IsTrue(),
+						baz2 = It.Is<bool>().That.IsFalse(),
+						empty = It.Is<object?>().That.IsNull(),
 					});
 
 				await That(Act).DoesNotThrow();
