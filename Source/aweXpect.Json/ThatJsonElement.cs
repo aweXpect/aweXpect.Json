@@ -27,8 +27,10 @@ public static partial class ThatJsonElement
 		public async Task<ConstraintResult> IsMetBy(JsonElement actual, CancellationToken cancellationToken)
 		{
 			Actual = actual;
-			var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
-			var converter = new ExpectationJsonConverter();
+#pragma warning disable CA1869
+			JsonSerializerOptions serializerOptions = new(JsonSerializerOptions.Default);
+#pragma warning restore CA1869
+			ExpectationJsonConverter? converter = new();
 			serializerOptions.Converters.Add(converter);
 			using JsonDocument expectedDocument =
 				JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), options.DocumentOptions);

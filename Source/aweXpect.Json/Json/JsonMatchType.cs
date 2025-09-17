@@ -40,11 +40,11 @@ internal sealed class JsonMatchType(JsonOptions options) : IStringMatchType
 #else
 	public async Task<bool>
 #endif
-	AreConsideredEqual(
-		string? actual,
-		string? expected,
-		bool ignoreCase,
-		IEqualityComparer<string> comparer)
+		AreConsideredEqual(
+			string? actual,
+			string? expected,
+			bool ignoreCase,
+			IEqualityComparer<string> comparer)
 	{
 		if (actual == null && expected == null)
 		{
@@ -64,7 +64,6 @@ internal sealed class JsonMatchType(JsonOptions options) : IStringMatchType
 			{
 				using JsonDocument actualJson = JsonDocument.Parse(actual, options.DocumentOptions);
 
-				// TODO
 				_comparisonResult = await JsonElementValidator.Compare(
 					actualJson.RootElement,
 					expectedJson.RootElement,

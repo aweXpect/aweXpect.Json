@@ -12,14 +12,16 @@ namespace aweXpect.Json;
 internal class ExpectationJsonConverter : JsonConverter<Expectation>
 {
 	private const string Prefix = "Expectation:::";
+
+	private readonly Dictionary<Guid, Expectation> _expectations = new();
+
 	public override bool CanConvert(Type typeToConvert)
 		=> typeof(Expectation).IsAssignableFrom(typeToConvert);
 
-	private Dictionary<Guid, Expectation> _expectations = new();
 	public override Expectation? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
-		var guid = Guid.Parse(reader.GetString()!);
-		if (_expectations.TryGetValue(guid, out var expectation))
+		Guid guid = Guid.Parse(reader.GetString()!);
+		if (_expectations.TryGetValue(guid, out Expectation? expectation))
 		{
 			return expectation;
 		}
@@ -29,22 +31,24 @@ internal class ExpectationJsonConverter : JsonConverter<Expectation>
 
 	public override void Write(Utf8JsonWriter writer, Expectation value, JsonSerializerOptions options)
 	{
-		var guid = Guid.NewGuid();
+		Guid guid = Guid.NewGuid();
 		_expectations[guid] = value;
 		writer.WriteStringValue(Prefix + guid);
 	}
 
-	public bool TryGetExpectation(JsonElement element, [NotNullWhen(true)] out EquivalencyExpectationBuilder? equivalencyExpectationBuilder)
+	public bool TryGetExpectation(JsonElement element,
+		[NotNullWhen(true)] out EquivalencyExpectationBuilder? equivalencyExpectationBuilder)
 	{
 		if (element.ValueKind == JsonValueKind.String)
 		{
-			var value = element.GetString();
+			string? value = element.GetString();
 			if (value?.StartsWith(Prefix) == true &&
-			    Guid.TryParse(value[Prefix.Length..], out var guid) &&
-			    _expectations.TryGetValue(guid, out var expectation) && expectation is IOptionsProvider<ExpectationBuilder>
-			{
-				Options: EquivalencyExpectationBuilder builder,
-			})
+			    Guid.TryParse(value[Prefix.Length..], out Guid guid) &&
+			    _expectations.TryGetValue(guid, out Expectation? expectation) &&
+			    expectation is IOptionsProvider<ExpectationBuilder>
+			    {
+				    Options: EquivalencyExpectationBuilder builder,
+			    })
 			{
 				equivalencyExpectationBuilder = builder;
 				return true;

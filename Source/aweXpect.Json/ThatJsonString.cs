@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using aweXpect.Core;
 using aweXpect.Core.Constraints;
 using aweXpect.Json;
-using aweXpect.Results;
 
 namespace aweXpect;
 
@@ -39,11 +35,13 @@ public static partial class ThatJsonString
 
 			using JsonDocument actualDocument = JsonDocument.Parse(
 				actual, options.DocumentOptions);
-			var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
-			var converter = new ExpectationJsonConverter();
+#pragma warning disable CA1869
+			JsonSerializerOptions serializerOptions = new(JsonSerializerOptions.Default);
+#pragma warning restore CA1869
+			ExpectationJsonConverter? converter = new();
 			serializerOptions.Converters.Add(converter);
 			using JsonDocument expectedDocument = JsonDocument.Parse(
-				JsonSerializer.Serialize(expected, options: serializerOptions),
+				JsonSerializer.Serialize(expected, serializerOptions),
 				options.DocumentOptions);
 
 			_comparisonResult = await JsonElementValidator.Compare(

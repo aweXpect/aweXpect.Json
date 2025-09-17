@@ -116,11 +116,14 @@ internal class JsonValidation : IJsonObjectResult,
 
 			if (currentElement != null)
 			{
-				var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
-				var converter = new ExpectationJsonConverter();
+#pragma warning disable CA1869
+				JsonSerializerOptions serializerOptions = new(JsonSerializerOptions.Default);
+#pragma warning restore CA1869
+				ExpectationJsonConverter? converter = new();
 				serializerOptions.Converters.Add(converter);
 				using JsonDocument expectedDocument =
-					JsonDocument.Parse(JsonSerializer.Serialize(expectedValue, serializerOptions), _options.DocumentOptions);
+					JsonDocument.Parse(JsonSerializer.Serialize(expectedValue, serializerOptions),
+						_options.DocumentOptions);
 				JsonElementValidator.JsonComparisonResult comparisonResult = JsonElementValidator.Compare(
 					CurrentPath,
 					currentElement.Value,
@@ -338,8 +341,10 @@ internal class JsonValidation : IJsonObjectResult,
 			return this;
 		}
 
-		var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
-		var converter = new ExpectationJsonConverter();
+#pragma warning disable CA1869
+		JsonSerializerOptions serializerOptions = new(JsonSerializerOptions.Default);
+#pragma warning restore CA1869
+		ExpectationJsonConverter? converter = new();
 		serializerOptions.Converters.Add(converter);
 		using JsonDocument expectedDocument =
 			JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), _options.DocumentOptions);
@@ -394,9 +399,11 @@ internal class JsonValidation : IJsonObjectResult,
 			_currentPath.Pop();
 			return this;
 		}
-		;
-		var serializerOptions = new JsonSerializerOptions(JsonSerializerOptions.Default);
-		var converter = new ExpectationJsonConverter();
+
+#pragma warning disable CA1869
+		JsonSerializerOptions serializerOptions = new(JsonSerializerOptions.Default);
+#pragma warning restore CA1869
+		ExpectationJsonConverter? converter = new();
 		serializerOptions.Converters.Add(converter);
 		using JsonDocument expectedDocument =
 			JsonDocument.Parse(JsonSerializer.Serialize(expected, serializerOptions), _options.DocumentOptions);

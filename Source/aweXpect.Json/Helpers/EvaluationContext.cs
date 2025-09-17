@@ -5,9 +5,9 @@ namespace aweXpect.Helpers;
 
 internal class EvaluationContext
 {
-	internal static IEvaluationContext None = new NoEvaluationContext();
+	internal static readonly IEvaluationContext None = new NoEvaluationContext();
 
-	private class NoEvaluationContext : IEvaluationContext
+	private sealed class NoEvaluationContext : IEvaluationContext
 	{
 		/// <inheritdoc cref="IEvaluationContext.Store{T}(string, T)" />
 		public void Store<T>(string key, T value)
