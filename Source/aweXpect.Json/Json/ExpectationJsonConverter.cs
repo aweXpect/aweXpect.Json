@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using aweXpect.Core;
+using aweXpect.Equivalency;
 using aweXpect.Results;
 
 namespace aweXpect.Json;
@@ -29,23 +31,27 @@ internal class ExpectationJsonConverter : JsonConverter<Expectation>
 	{
 		var guid = Guid.NewGuid();
 		_expectations[guid] = value;
-		writer.WriteStringValue(Prefix + guid.ToString());
+		writer.WriteStringValue(Prefix + guid);
 	}
 
-	public bool TryGetExpectation(JsonElement element, [NotNullWhen(true)] out Expectation? expectation)
+	public bool TryGetExpectation(JsonElement element, [NotNullWhen(true)] out EquivalencyExpectationBuilder? equivalencyExpectationBuilder)
 	{
 		if (element.ValueKind == JsonValueKind.String)
 		{
 			var value = element.GetString();
 			if (value?.StartsWith(Prefix) == true &&
 			    Guid.TryParse(value[Prefix.Length..], out var guid) &&
-			    _expectations.TryGetValue(guid, out expectation))
+			    _expectations.TryGetValue(guid, out var expectation) && expectation is IOptionsProvider<ExpectationBuilder>
 			{
+				Options: EquivalencyExpectationBuilder builder,
+			})
+			{
+				equivalencyExpectationBuilder = builder;
 				return true;
 			}
 		}
 
-		expectation = null;
+		equivalencyExpectationBuilder = null;
 		return false;
 	}
 }

@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using aweXpect.Core.Constraints;
 using aweXpect.Customization;
 using aweXpect.Equivalency;
-using aweXpect.Results;
+using aweXpect.Helpers;
 
 namespace aweXpect.Json;
 
@@ -42,16 +45,18 @@ internal static class JsonElementValidator
 		{
 			return result;
 		}
-		
+
 		return actualElement.ValueKind switch
 		{
-			JsonValueKind.Array => await result.CompareJsonArray(path, actualElement, expectedElement, options, converter),
+			JsonValueKind.Array => await result.CompareJsonArray(path, actualElement, expectedElement, options,
+				converter),
 			JsonValueKind.False => result.CompareJsonBoolean(JsonValueKind.False, path, actualElement, expectedElement),
 			JsonValueKind.True => result.CompareJsonBoolean(JsonValueKind.True, path, actualElement, expectedElement),
 			JsonValueKind.Null => result.CompareJsonNull(path, actualElement, expectedElement),
 			JsonValueKind.Number => result.CompareJsonNumber(path, actualElement, expectedElement),
 			JsonValueKind.String => result.CompareJsonString(path, actualElement, expectedElement),
-			JsonValueKind.Object => await result.CompareJsonObject(path, actualElement, expectedElement, options, converter),
+			JsonValueKind.Object => await result.CompareJsonObject(path, actualElement, expectedElement, options,
+				converter),
 			_ => throw new ArgumentOutOfRangeException($"Unsupported JsonValueKind: {actualElement.ValueKind}"),
 		};
 	}
@@ -268,35 +273,39 @@ internal static class JsonElementValidator
 		JsonElement expectedElement,
 		ExpectationJsonConverter? converter)
 	{
-		static string ConsolidateFailureBuilder(StringBuilder builder)
-		{
-			var error = builder.ToString().TrimStart();
-			if (error.StartsWith("It "))
+		static object? GetValue(JsonElement jsonElement)
+			=> jsonElement.ValueKind switch
 			{
-				return error.Substring("It ".Length);
-			}
+				JsonValueKind.True => true,
+				JsonValueKind.False => false,
+				JsonValueKind.Null => null,
+				JsonValueKind.String => jsonElement.GetString(),
+				JsonValueKind.Number when jsonElement.TryGetInt32(out int value) => value,
+				JsonValueKind.Number when jsonElement.TryGetSByte(out sbyte value) => value,
+				JsonValueKind.Number when jsonElement.TryGetByte(out byte value) => value,
+				JsonValueKind.Number when jsonElement.TryGetInt16(out short value) => value,
+				JsonValueKind.Number when jsonElement.TryGetUInt16(out ushort value) => value,
+				JsonValueKind.Number when jsonElement.TryGetUInt32(out uint value) => value,
+				JsonValueKind.Number when jsonElement.TryGetInt64(out long value) => value,
+				JsonValueKind.Number when jsonElement.TryGetUInt64(out ulong value) => value,
+				JsonValueKind.Number when jsonElement.TryGetDouble(out double value) => value,
+				JsonValueKind.Array => jsonElement.EnumerateArray().Select(GetValue).ToArray(),
+				_ => throw new NotSupportedException()
+			};
 
-			return error;
-		}
-		if (converter?.TryGetExpectation(expectedElement, out Expectation? expectation) == true)
+		if (converter?.TryGetExpectation(expectedElement, out EquivalencyExpectationBuilder? expectationBuilder) ==
+		    true)
 		{
 			StringBuilder? failureBuilder = new();
 
-			if (actualElement.TryGetInt32(out int v3))
-			{
-				if (!await EquivalencyComparison.Compare(v3, expectation,
-					    Customize.aweXpect.Equivalency().Get().DefaultEquivalencyOptions, failureBuilder))
-				{
-					result.AddError(path, ConsolidateFailureBuilder(failureBuilder));
-				}
-			}
-			else if (actualElement.TryGetDouble(out double v4) &&
-			         !await EquivalencyComparison.Compare(v4, expectation,
-				         Customize.aweXpect.Equivalency().Get().DefaultEquivalencyOptions, failureBuilder))
-			{
-				result.AddError(path, ConsolidateFailureBuilder(failureBuilder));
-			}
+			var value = GetValue(actualElement);
+			ConstraintResult constraintResult = await expectationBuilder.IsMetBy(value, EvaluationContext.None, CancellationToken.None);
 
+			if (constraintResult.Outcome == Outcome.Failure)
+			{
+				constraintResult.AppendResult(failureBuilder);
+				result.AddError(path, failureBuilder.ToString().Trim());
+			}
 			return true;
 		}
 

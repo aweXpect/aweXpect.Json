@@ -305,9 +305,92 @@ public sealed partial class ThatJsonString
 			}
 
 			[Fact]
-			public async Task WhenPropertyDoesNotMatchItIs_ShouldFail()
+			public async Task WhenPropertyDoesNotMatchItIsDouble_ShouldFail()
 			{
-				string subject = "{\"bar\": 2}";
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						bar2 = It.Is<double>().That.IsLessThan(2.0),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						bar2 = It.Is<double>().That.IsLessThan(2.0),
+					             					},
+					             but it differed as $.bar2 was 2.1
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsFalse_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						baz2 = It.Is<bool>().That.IsTrue(),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						baz2 = It.Is<bool>().That.IsTrue(),
+					             					},
+					             but it differed as $.baz2 was False
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsInt_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
 
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(new
@@ -323,6 +406,150 @@ public sealed partial class ThatJsonString
 					             						bar = It.Is<int>().That.IsGreaterThan(3),
 					             					},
 					             but it differed as $.bar was 2
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsList_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						list = It.Is<object[]>().That.Contains(4),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						list = It.Is<object[]>().That.Contains(4),
+					             					},
+					             but it differed as $.list did not contain it
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsNull_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						empty = It.Is<object?>().That.IsNotNull(),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						empty = It.Is<object?>().That.IsNotNull(),
+					             					},
+					             but it differed as $.empty was <null>
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsString_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						foo = It.Is<string>().That.EndsWith("bc"),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						foo = It.Is<string>().That.EndsWith("bc"),
+					             					},
+					             but it differed as $.foo was "xyz" which differs before index 2:
+					                  ↓ (actual)
+					               "xyz"
+					                "bc"
+					                  ↑ (expected suffix)
+					             """);
+			}
+
+			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsTrue_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						baz1 = It.Is<bool>().That.IsFalse(),
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						baz1 = It.Is<bool>().That.IsFalse(),
+					             					},
+					             but it differed as $.baz1 was True
 					             """);
 			}
 
@@ -355,20 +582,31 @@ public sealed partial class ThatJsonString
 				                 {
 				                   "foo": "xyz",
 				                   "bar": 2,
+				                   "bar2": 2.1,
 				                   "baz1": true,
 				                   "baz2": false,
-				                   "empty": null
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
 				                 }
 				                 """;
 
 				async Task Act()
 					=> await That(subject).IsValidJsonMatching(new
 					{
-						foo = It.Is<string>().That.EndsWith("yz"),
-						bar = It.Is<int>().That.IsGreaterThan(1),
-						baz1 = It.Is<bool>().That.IsTrue(),
-						baz2 = It.Is<bool>().That.IsFalse(),
-						empty = It.Is<object?>().That.IsNull(),
+						//foo = It.Is<string>().That.EndsWith("yz"),
+						//bar = It.Is<int>().That.IsGreaterThan(1),
+						//bar2 = It.Is<double>().That.IsBetween(2.0).And(2.2),
+						//baz1 = It.Is<bool>().That.IsTrue(),
+						//baz2 = It.Is<bool>().That.IsFalse(),
+						//empty = It.Is<object?>().That.IsNull(),
+						list = It.Is<object[]>().That.HasItem(2).AtIndex(1),
+						nested = new
+						{
+							foo = It.Is<string>().That.IsEmpty(),
+						},
 					});
 
 				await That(Act).DoesNotThrow();
