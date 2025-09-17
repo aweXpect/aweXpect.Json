@@ -480,6 +480,48 @@ public sealed partial class ThatJsonString
 			}
 
 			[Fact]
+			public async Task WhenPropertyDoesNotMatchItIsObject_ShouldFail()
+			{
+				string subject = """
+				                 {
+				                   "foo": "xyz",
+				                   "bar": 2,
+				                   "bar2": 2.1,
+				                   "baz1": true,
+				                   "baz2": false,
+				                   "empty": null,
+				                   "list": [1, 2, 3],
+				                   "nested": {
+				                     "foo": ""
+				                   }
+				                 }
+				                 """;
+
+				async Task Act()
+					=> await That(subject).IsValidJsonMatching(new
+					{
+						nested = new
+						{
+							foo = It.Is<string>().That.IsEqualTo("A"),
+						},
+					});
+
+				await That(Act).Throws<XunitException>()
+					.WithMessage("""
+					             Expected that subject
+					             is valid JSON which matches new
+					             					{
+					             						nested = new
+					             						{
+					             							foo = It.Is<string>().That.IsEqualTo("A"),
+					             						},
+					             					},
+					             but it differed as $.nested.foo was "" with a length of 0 which is shorter than the expected length of 1 and misses:
+					               "A"
+					             """);
+			}
+
+			[Fact]
 			public async Task WhenPropertyDoesNotMatchItIsString_ShouldFail()
 			{
 				string subject = """
