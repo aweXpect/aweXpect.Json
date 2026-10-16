@@ -193,6 +193,11 @@ internal static class JsonElementValidator
 			string memberPath = path + "." + item.Name;
 			if (!actualElement.TryGetProperty(item.Name, out JsonElement property))
 			{
+				if (options.TreatNullAsAbsent && item.Value.ValueKind == JsonValueKind.Null)
+				{
+					continue;
+				}
+
 				result.AddError(memberPath, "was missing");
 				continue;
 			}
@@ -206,6 +211,7 @@ internal static class JsonElementValidator
 			{
 				string memberPath = path + "." + property.Name;
 				if (result.HasMemberError(memberPath) ||
+				    (options.TreatNullAsAbsent && property.Value.ValueKind == JsonValueKind.Null) ||
 				    expectedElement.TryGetProperty(property.Name, out _))
 				{
 					continue;
