@@ -61,9 +61,8 @@ internal sealed class MembersToIgnoreTracker(MemberToIgnore[] membersToIgnore)
 		}
 
 		Dictionary<string, string?>? unmatched = null;
-		foreach (NamedMemberToIgnore named in membersToIgnore.OfType<NamedMemberToIgnore>())
+		foreach (string name in membersToIgnore.OfType<NamedMemberToIgnore>().Select(named => named.MemberName))
 		{
-			string name = named.MemberName;
 			if (_matchedNames.Contains(name))
 			{
 				continue;

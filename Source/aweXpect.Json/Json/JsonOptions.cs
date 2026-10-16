@@ -109,12 +109,12 @@ public record JsonOptions
 			return;
 		}
 
-		foreach (NamedMemberToIgnore named in MembersToIgnore.OfType<NamedMemberToIgnore>())
+		foreach (string name in MembersToIgnore.OfType<NamedMemberToIgnore>().Select(named => named.MemberName))
 		{
-			if (unmatchedMembersToIgnore.TryGetValue(named.MemberName, out string? suggestion))
+			if (unmatchedMembersToIgnore.TryGetValue(name, out string? suggestion))
 			{
 				sb.Append("   ");
-				Formatter.Format(sb, named.MemberName);
+				Formatter.Format(sb, name);
 				sb.Append(" matched no member");
 				if (suggestion is not null)
 				{
