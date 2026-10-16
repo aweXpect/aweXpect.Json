@@ -205,10 +205,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenValueAtPathDiffers_ShouldSucceed()
 			{
-				JsonElement? subject = FromString("{\"items\": [{\"sku\": \"A-1\"}]}");
+				JsonElement? subject = FromString("{\"tracks\": [{\"title\": \"Come Together\"}]}");
 
 				async Task Act()
-					=> await That(subject).DoesNotComplyWith(it => it.IsObject(o => o.At("items[0].sku").Matching("B-2")));
+					=> await That(subject).DoesNotComplyWith(it => it.IsObject(o => o.At("tracks[0].title").Matching("Something")));
 
 				await That(Act).DoesNotThrow();
 			}
@@ -219,10 +219,10 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenValueAtPathMatches_ShouldSucceed()
 			{
-				JsonElement? subject = FromString("{\"items\": [{\"sku\": \"A-1\"}]}");
+				JsonElement? subject = FromString("{\"tracks\": [{\"title\": \"Come Together\"}]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0].sku").Matching("A-1"));
+					=> await That(subject).IsObject(o => o.At("tracks[0].title").Matching("Come Together"));
 
 				await That(Act).DoesNotThrow();
 			}
@@ -230,16 +230,16 @@ public sealed partial class ThatNullableJsonElement
 			[Fact]
 			public async Task WhenIntermediatePropertyDoesNotExist_ShouldFail()
 			{
-				JsonElement? subject = FromString("{\"items\": [{\"sku\": \"A-1\"}]}");
+				JsonElement? subject = FromString("{\"tracks\": [{\"title\": \"Come Together\"}]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.city").Matching("Vienna"));
+					=> await That(subject).IsObject(o => o.At("artist.origin.city").Matching("Liverpool"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.address.city matches "Vienna",
-					             but it differed as property $.customer did not exist
+					             is an object and $.artist.origin.city matches "Liverpool",
+					             but it differed as property $.artist did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -252,12 +252,12 @@ public sealed partial class ThatNullableJsonElement
 				JsonElement? subject = null;
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0].sku").AString());
+					=> await That(subject).IsObject(o => o.At("tracks[0].title").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.items[0].sku is a string,
+					             is an object and $.tracks[0].title is a string,
 					             but it was <null>
 
 					             JSON options:

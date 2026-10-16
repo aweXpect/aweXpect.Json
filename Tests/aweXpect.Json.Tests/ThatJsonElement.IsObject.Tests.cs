@@ -384,24 +384,24 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenValueAtPathMatches_ShouldFail()
 			{
-				JsonElement subject = FromString("{\"customer\": {\"address\": {\"city\": \"Vienna\"}}}");
+				JsonElement subject = FromString("{\"artist\": {\"origin\": {\"city\": \"Liverpool\"}}}");
 
 				async Task Act()
 					=> await That(subject).DoesNotComplyWith(it => it.IsObject(o => o
-						.At("customer.address.city").Matching("Vienna").And
-						.At("customer.address").AnObject()));
+						.At("artist.origin.city").Matching("Liverpool").And
+						.At("artist.origin").AnObject()));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is not an object or $.customer.address.city does not match "Vienna" or $.customer.address is not an object,
+					             is not an object or $.artist.origin.city does not match "Liverpool" or $.artist.origin is not an object,
 					             but it was
 
 					             Actual:
 					             {
-					               "customer": {
-					                 "address": {
-					                   "city": "Vienna"
+					               "artist": {
+					                 "origin": {
+					                   "city": "Liverpool"
 					                 }
 					               }
 					             }
@@ -412,17 +412,17 @@ public sealed partial class ThatJsonElement
 			}
 
 			[Theory]
-			[InlineData("{\"customer\": {\"address\": {\"city\": \"Graz\"}}}")]
-			[InlineData("{\"customer\": {\"address\": {}}}")]
-			[InlineData("{\"customer\": {}}")]
-			[InlineData("{\"customer\": \"Vienna\"}")]
+			[InlineData("{\"artist\": {\"origin\": {\"city\": \"London\"}}}")]
+			[InlineData("{\"artist\": {\"origin\": {}}}")]
+			[InlineData("{\"artist\": {}}")]
+			[InlineData("{\"artist\": \"Liverpool\"}")]
 			public async Task WhenValueAtPathDiffersOrCannotBeReached_ShouldSucceed(string json)
 			{
 				JsonElement subject = FromString(json);
 
 				async Task Act()
 					=> await That(subject).DoesNotComplyWith(it
-						=> it.IsObject(o => o.At("customer.address.city").Matching("Vienna")));
+						=> it.IsObject(o => o.At("artist.origin.city").Matching("Liverpool")));
 
 				await That(Act).DoesNotThrow();
 			}
@@ -433,10 +433,10 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenPathAddressesNestedProperty_ShouldSucceed()
 			{
-				JsonElement subject = FromString("{\"customer\": {\"address\": {\"city\": \"Vienna\"}}}");
+				JsonElement subject = FromString("{\"artist\": {\"origin\": {\"city\": \"Liverpool\"}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.city").Matching("Vienna"));
+					=> await That(subject).IsObject(o => o.At("artist.origin.city").Matching("Liverpool"));
 
 				await That(Act).DoesNotThrow();
 			}
@@ -445,13 +445,13 @@ public sealed partial class ThatJsonElement
 			public async Task WhenPathContainsIndexes_ShouldSucceed()
 			{
 				JsonElement subject = FromString(
-					"{\"items\": [{\"sku\": \"A-1\"}, {\"sku\": \"B-2\", \"tags\": [\"x\", \"y\"]}], \"matrix\": [[1, 2], [3, 4]]}");
+					"{\"tracks\": [{\"title\": \"Come Together\"}, {\"title\": \"Something\", \"writers\": [\"Lennon\", \"Harrison\"]}], \"sides\": [[1, 2], [3, 4]]}");
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-						.At("items[1].sku").Matching("B-2").And
-						.At("items[1].tags[1]").Matching("y").And
-						.At("matrix[1][0]").Matching(3));
+						.At("tracks[1].title").Matching("Something").And
+						.At("tracks[1].writers[1]").Matching("Harrison").And
+						.At("sides[1][0]").Matching(3));
 
 				await That(Act).DoesNotThrow();
 			}
@@ -459,10 +459,10 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenPropertyNameContainsOtherSpecialCharacters_ShouldSucceed()
 			{
-				JsonElement subject = FromString("{\"$type\": {\"first name\": {\"a-b*\": 1}}}");
+				JsonElement subject = FromString("{\"$label\": {\"record company\": {\"catalog-no*\": 1}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("$type.first name.a-b*").Matching(1));
+					=> await That(subject).IsObject(o => o.At("$label.record company.catalog-no*").Matching(1));
 
 				await That(Act).DoesNotThrow()
 					.Because("only '.', '[' and ']' delimit the segments of a path");
@@ -471,16 +471,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenMatchFails_ShouldFailWithTheFullPath()
 			{
-				JsonElement subject = FromString("{\"customer\": {\"address\": {\"city\": \"Graz\"}}}");
+				JsonElement subject = FromString("{\"artist\": {\"origin\": {\"city\": \"London\"}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.city").Matching("Vienna"));
+					=> await That(subject).IsObject(o => o.At("artist.origin.city").Matching("Liverpool"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.address.city matches "Vienna",
-					             but it differed as $.customer.address.city was "Graz" instead of "Vienna"
+					             is an object and $.artist.origin.city matches "Liverpool",
+					             but it differed as $.artist.origin.city was "London" instead of "Liverpool"
 
 					             JSON options:
 					              - ignore additional properties
@@ -490,24 +490,24 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenMatchingObject_ShouldCompareTheValueAtThePath()
 			{
-				JsonElement subject = FromString("{\"items\": [{\"sku\": \"A-1\", \"amount\": 2}]}");
+				JsonElement subject = FromString("{\"tracks\": [{\"title\": \"Come Together\", \"durationSeconds\": 259}]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0]").Matching(new
+					=> await That(subject).IsObject(o => o.At("tracks[0]").Matching(new
 					{
-						sku = "A-1",
-						amount = 3,
+						title = "Come Together",
+						durationSeconds = 260,
 					}));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.items[0] matches new
+					             is an object and $.tracks[0] matches new
 					             {
-					             	sku = "A-1",
-					             	amount = 3,
+					             	title = "Come Together",
+					             	durationSeconds = 260,
 					             },
-					             but it differed as $.items[0].amount was 2 instead of 3
+					             but it differed as $.tracks[0].durationSeconds was 259 instead of 260
 
 					             JSON options:
 					              - ignore additional properties
@@ -517,19 +517,19 @@ public sealed partial class ThatJsonElement
 			[Theory]
 			[InlineData("true")]
 			[InlineData("false")]
-			public async Task WhenValuesHaveTheExpectedValueKinds_ShouldSucceed(string active)
+			public async Task WhenValuesHaveTheExpectedValueKinds_ShouldSucceed(string remastered)
 			{
 				JsonElement subject = FromString(
-					$"{{\"foo\": {{\"id\": 42, \"name\": \"foo\", \"active\": {active}, \"deletedAt\": null, \"tags\": [], \"bar\": {{}}}}}}");
+					$"{{\"album\": {{\"year\": 1969, \"title\": \"Abbey Road\", \"remastered\": {remastered}, \"producer\": null, \"tracks\": [], \"label\": {{}}}}}}");
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-						.At("foo.id").ANumber().And
-						.At("foo.name").AString().And
-						.At("foo.active").ABoolean().And
-						.At("foo.deletedAt").Null().And
-						.At("foo.tags").AnArray().And
-						.At("foo.bar").AnObject());
+						.At("album.year").ANumber().And
+						.At("album.title").AString().And
+						.At("album.remastered").ABoolean().And
+						.At("album.producer").Null().And
+						.At("album.tracks").AnArray().And
+						.At("album.label").AnObject());
 
 				await That(Act).DoesNotThrow();
 			}
@@ -538,28 +538,28 @@ public sealed partial class ThatJsonElement
 			public async Task WhenValuesHaveOtherValueKinds_ShouldListAllFailuresInOrder()
 			{
 				JsonElement subject = FromString(
-					"{\"foo\": {\"id\": \"42\", \"name\": 1, \"active\": \"yes\", \"deletedAt\": false, \"tags\": {}, \"bar\": []}}");
+					"{\"album\": {\"year\": \"1969\", \"title\": 1, \"remastered\": \"yes\", \"producer\": false, \"tracks\": {}, \"label\": []}}");
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-						.At("foo.id").ANumber().And
-						.At("foo.name").AString().And
-						.At("foo.active").ABoolean().And
-						.At("foo.deletedAt").Null().And
-						.At("foo.tags").AnArray().And
-						.At("foo.bar").AnObject());
+						.At("album.year").ANumber().And
+						.At("album.title").AString().And
+						.At("album.remastered").ABoolean().And
+						.At("album.producer").Null().And
+						.At("album.tracks").AnArray().And
+						.At("album.label").AnObject());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.foo.id is a number and $.foo.name is a string and $.foo.active is a boolean and $.foo.deletedAt is null and $.foo.tags is an array and $.foo.bar is an object,
+					             is an object and $.album.year is a number and $.album.title is a string and $.album.remastered is a boolean and $.album.producer is null and $.album.tracks is an array and $.album.label is an object,
 					             but it differed as
-					               $.foo.id was a string and
-					               $.foo.name was a number and
-					               $.foo.active was a string and
-					               $.foo.deletedAt was false and
-					               $.foo.tags was an object and
-					               $.foo.bar was an array
+					               $.album.year was a string and
+					               $.album.title was a number and
+					               $.album.remastered was a string and
+					               $.album.producer was false and
+					               $.album.tracks was an object and
+					               $.album.label was an array
 
 					             JSON options:
 					              - ignore additional properties
@@ -570,25 +570,25 @@ public sealed partial class ThatJsonElement
 			public async Task WhenNestedExpectationsFail_ShouldReportTheFullPaths()
 			{
 				JsonElement subject = FromString(
-					"{\"order\": {\"id\": 1, \"customer\": {\"city\": \"Graz\", \"tags\": [{\"id\": 1}]}}}");
+					"{\"album\": {\"year\": 1969, \"artist\": {\"city\": \"London\", \"members\": [{\"born\": 1940}]}}}");
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-						.At("order.id").Matching(2).And
-						.With("order").AnObject(order => order
-							.At("customer.city").Matching("Vienna").And
-							.At("customer").AnObject(c => c.At("tags[0].id").Matching(2)).And
-							.At("customer.tags").AnArray(t => t.At(0).AnObject(e => e.At("id").Matching(3)))));
+						.At("album.year").Matching(1970).And
+						.With("album").AnObject(album => album
+							.At("artist.city").Matching("Liverpool").And
+							.At("artist").AnObject(a => a.At("members[0].born").Matching(1941)).And
+							.At("artist.members").AnArray(m => m.At(0).AnObject(e => e.At("born").Matching(1942)))));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.order.id matches 2 and $.order is an object and $.order.customer.city matches "Vienna" and $.order.customer is an object and $.order.customer.tags[0].id matches 2 and $.order.customer.tags is an array and $.order.customer.tags[0] is an object and $.order.customer.tags[0].id matches 3,
+					             is an object and $.album.year matches 1970 and $.album is an object and $.album.artist.city matches "Liverpool" and $.album.artist is an object and $.album.artist.members[0].born matches 1941 and $.album.artist.members is an array and $.album.artist.members[0] is an object and $.album.artist.members[0].born matches 1942,
 					             but it differed as
-					               $.order.id was 1 instead of 2 and
-					               $.order.customer.city was "Graz" instead of "Vienna" and
-					               $.order.customer.tags[0].id was 1 instead of 2 and
-					               $.order.customer.tags[0].id was 1 instead of 3
+					               $.album.year was 1969 instead of 1970 and
+					               $.album.artist.city was "London" instead of "Liverpool" and
+					               $.album.artist.members[0].born was 1940 instead of 1941 and
+					               $.album.artist.members[0].born was 1940 instead of 1942
 
 					             JSON options:
 					              - ignore additional properties
@@ -599,24 +599,24 @@ public sealed partial class ThatJsonElement
 			public async Task WhenCombinedWithWithAndWithout_ShouldListAllFailuresInOrder()
 			{
 				JsonElement subject = FromString(
-					"{\"id\": 1, \"customer\": {\"name\": \"John\", \"passwordHash\": \"8f14e4\"}}");
+					"{\"year\": 1969, \"artist\": {\"name\": \"The Beatles\", \"label\": \"Apple\"}}");
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-						.With("id").Matching(2).And
-						.At("customer.name").Matching("Jane").And
-						.Without("customer").And
-						.With("customer").AnObject(c => c.Without("passwordHash")));
+						.With("year").Matching(1970).And
+						.At("artist.name").Matching("Wings").And
+						.Without("artist").And
+						.With("artist").AnObject(a => a.Without("label")));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.id matches 2 and $.customer.name matches "Jane" and $.customer does not exist and $.customer is an object and $.customer.passwordHash does not exist,
+					             is an object and $.year matches 1970 and $.artist.name matches "Wings" and $.artist does not exist and $.artist is an object and $.artist.label does not exist,
 					             but it differed as
-					               $.id was 1 instead of 2 and
-					               $.customer.name was "John" instead of "Jane" and
-					               $.customer was {"name":"John","passwordHash":"8f14e4"} and
-					               $.customer.passwordHash was "8f14e4"
+					               $.year was 1969 instead of 1970 and
+					               $.artist.name was "The Beatles" instead of "Wings" and
+					               $.artist was {"name":"The Beatles","label":"Apple"} and
+					               $.artist.label was "Apple"
 
 					             JSON options:
 					              - ignore additional properties
@@ -626,16 +626,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenFinalPropertyDoesNotExist_ShouldFail()
 			{
-				JsonElement subject = FromString("{\"customer\": {\"address\": {}}}");
+				JsonElement subject = FromString("{\"artist\": {\"origin\": {}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.city").AString());
+					=> await That(subject).IsObject(o => o.At("artist.origin.city").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.address.city is a string,
-					             but it differed as property $.customer.address.city did not exist
+					             is an object and $.artist.origin.city is a string,
+					             but it differed as property $.artist.origin.city did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -645,16 +645,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenIntermediatePropertyDoesNotExist_ShouldOnlyReportTheFirstMissingProperty()
 			{
-				JsonElement subject = FromString("{\"customer\": {}}");
+				JsonElement subject = FromString("{\"artist\": {}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.street.name").Matching("Main"));
+					=> await That(subject).IsObject(o => o.At("artist.origin.country.name").Matching("England"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.address.street.name matches "Main",
-					             but it differed as property $.customer.address did not exist
+					             is an object and $.artist.origin.country.name matches "England",
+					             but it differed as property $.artist.origin did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -684,23 +684,23 @@ public sealed partial class ThatJsonElement
 			}
 
 			[Theory]
-			[InlineData("\"Main\"", "a string")]
+			[InlineData("\"Liverpool\"", "a string")]
 			[InlineData("[]", "an array")]
 			[InlineData("1", "a number")]
 			[InlineData("true", "true")]
 			[InlineData("null", "null")]
 			public async Task WhenIntermediateValueIsNoObject_ShouldFail(string value, string kindString)
 			{
-				JsonElement subject = FromString($"{{\"customer\": {{\"address\": {value}}}}}");
+				JsonElement subject = FromString($"{{\"artist\": {{\"origin\": {value}}}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.address.city.name").Matching("Vienna"));
+					=> await That(subject).IsObject(o => o.At("artist.origin.country.name").Matching("England"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage($"""
 					              Expected that subject
-					              is an object and $.customer.address.city.name matches "Vienna",
-					              but it differed as $.customer.address was {kindString}
+					              is an object and $.artist.origin.country.name matches "England",
+					              but it differed as $.artist.origin was {kindString}
 
 					              JSON options:
 					               - ignore additional properties
@@ -709,20 +709,20 @@ public sealed partial class ThatJsonElement
 
 			[Theory]
 			[InlineData("{}", "an object")]
-			[InlineData("\"A-1\"", "a string")]
+			[InlineData("\"Come Together\"", "a string")]
 			[InlineData("null", "null")]
 			public async Task WhenIntermediateValueIsNoArray_ShouldFail(string value, string kindString)
 			{
-				JsonElement subject = FromString($"{{\"items\": {value}}}");
+				JsonElement subject = FromString($"{{\"tracks\": {value}}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0].sku").AString());
+					=> await That(subject).IsObject(o => o.At("tracks[0].title").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage($"""
 					              Expected that subject
-					              is an object and $.items[0].sku is a string,
-					              but it differed as $.items was {kindString}
+					              is an object and $.tracks[0].title is a string,
+					              but it differed as $.tracks was {kindString}
 
 					              JSON options:
 					               - ignore additional properties
@@ -732,16 +732,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenIntermediateIndexDoesNotExist_ShouldFail()
 			{
-				JsonElement subject = FromString("{\"items\": [{\"sku\": \"A-1\"}]}");
+				JsonElement subject = FromString("{\"tracks\": [{\"title\": \"Come Together\"}]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[3].sku").AString());
+					=> await That(subject).IsObject(o => o.At("tracks[3].title").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.items[3].sku is a string,
-					             but it differed as index $.items[3] did not exist
+					             is an object and $.tracks[3].title is a string,
+					             but it differed as index $.tracks[3] did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -751,16 +751,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenFinalIndexDoesNotExist_ShouldFail()
 			{
-				JsonElement subject = FromString("{\"items\": [{\"tags\": [\"x\"]}]}");
+				JsonElement subject = FromString("{\"tracks\": [{\"writers\": [\"Lennon\"]}]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0].tags[1]").Matching("y"));
+					=> await That(subject).IsObject(o => o.At("tracks[0].writers[1]").Matching("McCartney"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.items[0].tags[1] matches "y",
-					             but it differed as index $.items[0].tags[1] did not exist
+					             is an object and $.tracks[0].writers[1] matches "McCartney",
+					             but it differed as index $.tracks[0].writers[1] did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -770,16 +770,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenMatchingNullOnMissingProperty_ShouldFail()
 			{
-				JsonElement subject = FromString("{\"customer\": {}}");
+				JsonElement subject = FromString("{\"album\": {}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.deletedAt").Matching(null));
+					=> await That(subject).IsObject(o => o.At("album.producer").Matching(null));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.deletedAt matches null,
-					             but it differed as property $.customer.deletedAt did not exist
+					             is an object and $.album.producer matches null,
+					             but it differed as property $.album.producer did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -788,16 +788,16 @@ public sealed partial class ThatJsonElement
 			}
 
 			[Theory]
-			[InlineData("{\"customer\": {\"deletedAt\": null}}")]
-			[InlineData("{\"customer\": {}}")]
+			[InlineData("{\"album\": {\"producer\": null}}")]
+			[InlineData("{\"album\": {}}")]
 			public async Task WhenMatchingNullOrNull_WhenTreatingNullAsAbsent_ShouldSucceed(string json)
 			{
 				JsonElement subject = FromString(json);
 
 				async Task Act()
 					=> await That(subject).IsObject(o => o
-							.At("customer.deletedAt").Matching(null).And
-							.At("customer.deletedAt").Null(),
+							.At("album.producer").Matching(null).And
+							.At("album.producer").Null(),
 						o => o.TreatingNullAsAbsent());
 
 				await That(Act).DoesNotThrow()
@@ -805,21 +805,21 @@ public sealed partial class ThatJsonElement
 			}
 
 			[Theory]
-			[InlineData("{\"customer\": {\"name\": null}}")]
-			[InlineData("{\"customer\": {}}")]
+			[InlineData("{\"album\": {\"title\": null}}")]
+			[InlineData("{\"album\": {}}")]
 			public async Task WhenFinalPropertyIsAbsent_WhenTreatingNullAsAbsent_ShouldFail(string json)
 			{
 				JsonElement subject = FromString(json);
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.name").AString(),
+					=> await That(subject).IsObject(o => o.At("album.title").AString(),
 						o => o.TreatingNullAsAbsent());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.name is a string,
-					             but it differed as property $.customer.name did not exist
+					             is an object and $.album.title is a string,
+					             but it differed as property $.album.title did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -828,7 +828,7 @@ public sealed partial class ThatJsonElement
 			}
 
 			[Theory]
-			[InlineData("{\"customer\": null}")]
+			[InlineData("{\"album\": null}")]
 			[InlineData("{}")]
 			public async Task WhenIntermediatePropertyIsAbsent_WhenTreatingNullAsAbsent_ShouldFailEvenWhenMatchingNull(
 				string json)
@@ -836,14 +836,14 @@ public sealed partial class ThatJsonElement
 				JsonElement subject = FromString(json);
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.deletedAt").Matching(null),
+					=> await That(subject).IsObject(o => o.At("album.producer").Matching(null),
 						o => o.TreatingNullAsAbsent());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.deletedAt matches null,
-					             but it differed as property $.customer did not exist
+					             is an object and $.album.producer matches null,
+					             but it differed as property $.album did not exist
 
 					             JSON options:
 					              - ignore additional properties
@@ -855,17 +855,17 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenIntermediateArrayElementIsNull_WhenTreatingNullAsAbsent_ShouldReportItsKind()
 			{
-				JsonElement subject = FromString("{\"items\": [null]}");
+				JsonElement subject = FromString("{\"tracks\": [null]}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("items[0].sku").Matching(null),
+					=> await That(subject).IsObject(o => o.At("tracks[0].title").Matching(null),
 						o => o.TreatingNullAsAbsent());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.items[0].sku matches null,
-					             but it differed as $.items[0] was null
+					             is an object and $.tracks[0].title matches null,
+					             but it differed as $.tracks[0] was null
 
 					             JSON options:
 					              - ignore additional properties
@@ -876,18 +876,18 @@ public sealed partial class ThatJsonElement
 
 			[Theory]
 			[InlineData("{}")]
-			[InlineData("{\"a\": null}")]
-			[InlineData("{\"a\": 1}")]
-			[InlineData("{\"a\": {}}")]
-			[InlineData("{\"a\": {\"b\": null}}")]
-			[InlineData("{\"a\": {\"b\": {}}}")]
-			[InlineData("{\"a\": {\"b\": []}}")]
-			[InlineData("{\"a\": {\"b\": [null]}}")]
-			[InlineData("{\"a\": {\"b\": [[]]}}")]
-			[InlineData("{\"a\": {\"b\": [{}]}}")]
-			[InlineData("{\"a\": {\"b\": [{\"c\": null}]}}")]
-			[InlineData("{\"a\": {\"b\": [{\"c\": 2}]}}")]
-			[InlineData("{\"a\": {\"b\": [{\"c\": 1}]}}")]
+			[InlineData("{\"album\": null}")]
+			[InlineData("{\"album\": 1}")]
+			[InlineData("{\"album\": {}}")]
+			[InlineData("{\"album\": {\"tracks\": null}}")]
+			[InlineData("{\"album\": {\"tracks\": {}}}")]
+			[InlineData("{\"album\": {\"tracks\": []}}")]
+			[InlineData("{\"album\": {\"tracks\": [null]}}")]
+			[InlineData("{\"album\": {\"tracks\": [[]]}}")]
+			[InlineData("{\"album\": {\"tracks\": [{}]}}")]
+			[InlineData("{\"album\": {\"tracks\": [{\"durationSeconds\": null}]}}")]
+			[InlineData("{\"album\": {\"tracks\": [{\"durationSeconds\": 2}]}}")]
+			[InlineData("{\"album\": {\"tracks\": [{\"durationSeconds\": 1}]}}")]
 			public async Task ShouldVerifyTheSameAsTheEquivalentNestedBuilders(string json)
 			{
 				JsonElement subject = FromString(json);
@@ -896,13 +896,13 @@ public sealed partial class ThatJsonElement
 				foreach ((bool treatNullAsAbsent, object? expected) in variants)
 				{
 					Exception? pathException = await Record.ExceptionAsync(async () => await That(subject).IsObject(
-						o => o.At("a.b[0].c").Matching(expected),
+						o => o.At("album.tracks[0].durationSeconds").Matching(expected),
 						o => o.TreatingNullAsAbsent(treatNullAsAbsent)));
 					Exception? nestedException = await Record.ExceptionAsync(async () => await That(subject).IsObject(
-						o => o.With("a").AnObject(a => a
-							.With("b").AnArray(b => b
-								.At(0).AnObject(e => e
-									.With("c").Matching(expected)))),
+						o => o.With("album").AnObject(album => album
+							.With("tracks").AnArray(tracks => tracks
+								.At(0).AnObject(track => track
+									.With("durationSeconds").Matching(expected)))),
 						o => o.TreatingNullAsAbsent(treatNullAsAbsent)));
 
 					await That(GetResult(pathException)).IsEqualTo(GetResult(nestedException))
@@ -916,20 +916,20 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenPropertyIsIgnored_ShouldStillVerifyIt()
 			{
-				JsonElement subject = FromString("{\"customer\": {\"id\": 1}}");
+				JsonElement subject = FromString("{\"album\": {\"year\": 1969}}");
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("customer.id").Matching(2), o => o.IgnoringMember("id"));
+					=> await That(subject).IsObject(o => o.At("album.year").Matching(1970), o => o.IgnoringMember("year"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is an object and $.customer.id matches 2,
-					             but it differed as $.customer.id was 1 instead of 2
+					             is an object and $.album.year matches 1970,
+					             but it differed as $.album.year was 1969 instead of 1970
 
 					             JSON options:
 					              - ignore additional properties
-					              - ignore members: ["id"]
+					              - ignore members: ["year"]
 					             """)
 					.Because("an explicit expectation wins over an ignored member");
 			}
@@ -937,16 +937,16 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenMemberIsPlural_ShouldUseSingularFormForThePath()
 			{
-				JsonElement subject = FromString("{\"foo\": {\"bar\": \"baz\"}}");
+				JsonElement subject = FromString("{\"album\": {\"title\": \"Abbey Road\"}}");
 
 				async Task Act()
-					=> await WhosePluralItems(That(subject), items => items.IsObject(o => o.At("foo.bar").ANumber()));
+					=> await WhosePluralItems(That(subject), items => items.IsObject(o => o.At("album.title").ANumber()));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             whose Items are objects and $.foo.bar is a number,
-					             but Items differed as $.foo.bar was a string
+					             whose Items are objects and $.album.title is a number,
+					             but Items differed as $.album.title was a string
 
 					             JSON options (Items):
 					              - ignore additional properties
@@ -956,18 +956,18 @@ public sealed partial class ThatJsonElement
 
 			[Theory]
 			[InlineData("[]", "an array")]
-			[InlineData("\"foo\"", "a string")]
+			[InlineData("\"Abbey Road\"", "a string")]
 			public async Task WhenJsonIsNoObject_ShouldOnlyReportTheKind(string json, string kindString)
 			{
 				JsonElement subject = FromString(json);
 
 				async Task Act()
-					=> await That(subject).IsObject(o => o.At("foo.bar").AString());
+					=> await That(subject).IsObject(o => o.At("album.title").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage($"""
 					              Expected that subject
-					              is an object and $.foo.bar is a string,
+					              is an object and $.album.title is a string,
 					              but it was {kindString}
 
 					              JSON options:
