@@ -202,10 +202,6 @@ await Expect.That(titles).Matches(["Let It Be", "Yesterday"],
     o => o.IgnoringAdditionalArrayElements());
 ```
 
-> **Note:** Previously, `IgnoringAdditionalProperties()` also ignored additional array elements, so `Matches`,
-> `IsValidJsonMatching` and the expectations in [`IsObject`](#isobject) and [`IsArray`](#isarray) ignored them by
-> default. Now they are only ignored with `IgnoringAdditionalArrayElements()`, which restores the previous behavior.
-
 By default, arrays are compared by index. With `IgnoringArrayOrder()`, the elements of all compared arrays, also
 nested ones, can be in any order. The option is available wherever `JsonOptions` are accepted, e.g.
 `IsEqualTo(expected).AsJson(o => o.IgnoringArrayOrder())`:
