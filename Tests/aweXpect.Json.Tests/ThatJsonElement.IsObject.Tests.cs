@@ -664,18 +664,18 @@ public sealed partial class ThatJsonElement
 			[Fact]
 			public async Task WhenIntermediatePropertyDoesNotExist_ShouldNotAffectOtherPaths()
 			{
-				JsonElement order = FromString("{\"customer\": {}, \"items\": [{\"sku\": \"A-1\"}]}");
+				JsonElement album = FromString("{\"artist\": {}, \"tracks\": [{\"title\": \"Come Together\"}]}");
 
 				async Task Act()
-					=> await That(order).IsObject(o => o
-						.At("customer.address.city").Matching("Vienna").And
-						.At("items[0].sku").AString());
+					=> await That(album).IsObject(o => o
+						.At("artist.origin.city").Matching("Liverpool").And
+						.At("tracks[0].title").AString());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
-					             Expected that order
-					             is an object and $.customer.address.city matches "Vienna" and $.items[0].sku is a string,
-					             but it differed as property $.customer.address did not exist
+					             Expected that album
+					             is an object and $.artist.origin.city matches "Liverpool" and $.tracks[0].title is a string,
+					             but it differed as property $.artist.origin did not exist
 
 					             JSON options:
 					              - ignore additional properties

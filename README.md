@@ -346,20 +346,20 @@ contain `.`, `[` or `]` can only be addressed with `With(…)`. The addressed va
 `With(…)`:
 
 ```csharp
-JsonElement order = JsonDocument.Parse(
-    """{"customer": {"address": {"city": "Vienna"}}, "items": [{"sku": "A-1"}]}""").RootElement;
+JsonElement album = JsonDocument.Parse(
+    """{"artist": {"origin": {"city": "Liverpool"}}, "tracks": [{"title": "Come Together"}]}""").RootElement;
 
-await Expect.That(order).IsObject(o => o
-    .At("customer.address.city").Matching("Vienna").And
-    .At("items[0].sku").AString());
+await Expect.That(album).IsObject(o => o
+    .At("artist.origin.city").Matching("Liverpool").And
+    .At("tracks[0].title").AString());
 ```
 
-If the customer had no address, the expectation would fail with the first segment that could not be reached:
+If the artist had no origin, the expectation would fail with the first segment that could not be reached:
 
 ```text title="Failure message"
-Expected that order
-is an object and $.customer.address.city matches "Vienna" and $.items[0].sku is a string,
-but it differed as property $.customer.address did not exist
+Expected that album
+is an object and $.artist.origin.city matches "Liverpool" and $.tracks[0].title is a string,
+but it differed as property $.artist.origin did not exist
 
 JSON options:
  - ignore additional properties
