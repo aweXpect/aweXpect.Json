@@ -25,11 +25,11 @@ public static partial class ThatJsonObject
 	///     The subject is serialized with the customizable default <see cref="JsonSerializerOptions" />, and the result is
 	///     compared exactly, unless the <paramref name="options" /> relax the comparison.
 	/// </remarks>
-	public static AndOrResult<T, IThat<T>> IsSerializedAs<T>(
+	public static AndOrResult<T, IThat<T>> IsJsonSerializedAs<T>(
 		this IThat<T> source,
 		string expected,
 		Func<JsonOptions, JsonOptions>? options = null)
-		=> IsSerializedAsJson(source, expected, options, null, null);
+		=> IsJsonSerializedAsJson(source, expected, options, null, null);
 
 	/// <summary>
 	///     Verifies that the subject is serialized with the <paramref name="serializerOptions" /> as the
@@ -38,12 +38,12 @@ public static partial class ThatJsonObject
 	/// <remarks>
 	///     The result is compared exactly, unless the <paramref name="options" /> relax the comparison.
 	/// </remarks>
-	public static AndOrResult<T, IThat<T>> IsSerializedAs<T>(
+	public static AndOrResult<T, IThat<T>> IsJsonSerializedAs<T>(
 		this IThat<T> source,
 		string expected,
 		JsonSerializerOptions serializerOptions,
 		Func<JsonOptions, JsonOptions>? options = null)
-		=> IsSerializedAsJson(source, expected, options, serializerOptions, null);
+		=> IsJsonSerializedAsJson(source, expected, options, serializerOptions, null);
 
 	/// <summary>
 	///     Verifies that the subject is serialized with the <paramref name="typeInfo" /> as the
@@ -53,12 +53,12 @@ public static partial class ThatJsonObject
 	///     Unlike the other overloads, it requires no reflection, so that it can be used with trimming and Native AOT.
 	///     The result is compared exactly, unless the <paramref name="options" /> relax the comparison.
 	/// </remarks>
-	public static AndOrResult<T?, IThat<T?>> IsSerializedAs<T>(
+	public static AndOrResult<T?, IThat<T?>> IsJsonSerializedAs<T>(
 		this IThat<T?> source,
 		string expected,
 		JsonTypeInfo<T> typeInfo,
 		Func<JsonOptions, JsonOptions>? options = null)
-		=> IsSerializedAsJson(source, expected, options, null, typeInfo);
+		=> IsJsonSerializedAsJson(source, expected, options, null, typeInfo);
 
 	/// <summary>
 	///     Verifies that the subject is serialized as JSON that matches the <paramref name="expected" /> value.
@@ -67,12 +67,12 @@ public static partial class ThatJsonObject
 	///     The subject is serialized with the customizable default <see cref="JsonSerializerOptions" />, and the result is
 	///     compared exactly, unless the <paramref name="options" /> relax the comparison.
 	/// </remarks>
-	public static AndOrResult<T, IThat<T>> IsSerializedAs<T>(
+	public static AndOrResult<T, IThat<T>> IsJsonSerializedAs<T>(
 		this IThat<T> source,
 		object? expected,
 		Func<JsonOptions, JsonOptions>? options = null,
 		[CallerArgumentExpression("expected")] string doNotPopulateThisValue = "")
-		=> IsSerializedAsObject(source, expected, doNotPopulateThisValue, options, null);
+		=> IsJsonSerializedAsObject(source, expected, doNotPopulateThisValue, options, null);
 
 	/// <summary>
 	///     Verifies that the subject is serialized with the <paramref name="serializerOptions" /> as JSON that matches the
@@ -81,19 +81,19 @@ public static partial class ThatJsonObject
 	/// <remarks>
 	///     The result is compared exactly, unless the <paramref name="options" /> relax the comparison.
 	/// </remarks>
-	public static AndOrResult<T, IThat<T>> IsSerializedAs<T>(
+	public static AndOrResult<T, IThat<T>> IsJsonSerializedAs<T>(
 		this IThat<T> source,
 		object? expected,
 		JsonSerializerOptions serializerOptions,
 		Func<JsonOptions, JsonOptions>? options = null,
 		[CallerArgumentExpression("expected")] string doNotPopulateThisValue = "")
-		=> IsSerializedAsObject(source, expected, doNotPopulateThisValue, options, serializerOptions);
+		=> IsJsonSerializedAsObject(source, expected, doNotPopulateThisValue, options, serializerOptions);
 
 	/// <remarks>
 	///     The expected JSON is shown as it is, like in <c>IsEqualTo(expected).AsJson()</c>, because it tells more than
 	///     the expression of a variable.
 	/// </remarks>
-	private static AndOrResult<T, IThat<T>> IsSerializedAsJson<T>(
+	private static AndOrResult<T, IThat<T>> IsJsonSerializedAsJson<T>(
 		IThat<T> source,
 		string expected,
 		Func<JsonOptions, JsonOptions>? options,
@@ -101,12 +101,12 @@ public static partial class ThatJsonObject
 		JsonTypeInfo? typeInfo)
 	{
 		JsonOptions jsonOptions = options?.Invoke(new JsonOptions()) ?? new JsonOptions();
-		return AddIsSerializedAs(source,
+		return AddIsJsonSerializedAs(source,
 			_ => JsonMatchType.ParseExpected(expected, jsonOptions.DocumentOptions),
 			expected, jsonOptions, serializerOptions, typeInfo);
 	}
 
-	private static AndOrResult<T, IThat<T>> IsSerializedAsObject<T>(
+	private static AndOrResult<T, IThat<T>> IsJsonSerializedAsObject<T>(
 		IThat<T> source,
 		object? expected,
 		string expectedExpression,
@@ -114,12 +114,12 @@ public static partial class ThatJsonObject
 		JsonSerializerOptions? serializerOptions)
 	{
 		JsonOptions jsonOptions = options?.Invoke(new JsonOptions()) ?? new JsonOptions();
-		return AddIsSerializedAs(source,
+		return AddIsJsonSerializedAs(source,
 			converter => converter.ParseExpected(expected, jsonOptions.DocumentOptions),
 			expectedExpression.TrimCommonWhiteSpace(), jsonOptions, serializerOptions, null);
 	}
 
-	private static AndOrResult<T, IThat<T>> AddIsSerializedAs<T>(
+	private static AndOrResult<T, IThat<T>> AddIsJsonSerializedAs<T>(
 		IThat<T> source,
 		Func<ExpectationJsonConverter, JsonDocument> parseExpected,
 		string expectedText,
@@ -130,11 +130,11 @@ public static partial class ThatJsonObject
 			source.Get().ExpectationBuilder.AddConstraint(
 				(ParseExpected: parseExpected, ExpectedText: expectedText, Options: options,
 					SerializerOptions: serializerOptions, TypeInfo: typeInfo),
-				static (s, it, grammar) => new IsSerializedAsConstraint<T>(it, grammar, s.ParseExpected,
+				static (s, it, grammar) => new IsJsonSerializedAsConstraint<T>(it, grammar, s.ParseExpected,
 					s.ExpectedText, s.Options, s.SerializerOptions, s.TypeInfo)),
 			source);
 
-	private sealed class IsSerializedAsConstraint<T>(
+	private sealed class IsJsonSerializedAsConstraint<T>(
 		string it,
 		ExpectationGrammars grammars,
 		Func<ExpectationJsonConverter, JsonDocument> parseExpected,
@@ -220,7 +220,7 @@ public static partial class ThatJsonObject
 		}
 
 		protected override void AppendNormalExpectation(StringBuilder stringBuilder, string? indentation = null)
-			=> stringBuilder.Append(Grammars.Verb("is serialized as ", "are serialized as ")).Append(expectedText);
+			=> stringBuilder.Append(Grammars.Verb("is serialized as JSON ", "are serialized as JSON ")).Append(expectedText);
 
 		protected override void AppendNormalResult(StringBuilder stringBuilder, string? indentation = null)
 		{
@@ -232,7 +232,7 @@ public static partial class ThatJsonObject
 		}
 
 		protected override void AppendNegatedExpectation(StringBuilder stringBuilder, string? indentation = null)
-			=> stringBuilder.Append(Grammars.Verb("is not serialized as ", "are not serialized as "))
+			=> stringBuilder.Append(Grammars.Verb("is not serialized as JSON ", "are not serialized as JSON "))
 				.Append(expectedText);
 
 		protected override void AppendNegatedResult(StringBuilder stringBuilder, string? indentation = null)

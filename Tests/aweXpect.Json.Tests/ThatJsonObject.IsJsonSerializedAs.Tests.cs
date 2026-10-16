@@ -12,7 +12,7 @@ namespace aweXpect.Json.Tests;
 
 public sealed partial class ThatJsonObject
 {
-	public sealed class IsSerializedAs
+	public sealed class IsJsonSerializedAs
 	{
 		public sealed class JsonTests
 		{
@@ -22,7 +22,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("{\"Title\":");
+					=> await That(subject).IsJsonSerializedAs("{\"Title\":");
 
 				await That(Act).Throws<ArgumentException>()
 					.WithMessage("The expected JSON is invalid: *").AsWildcard();
@@ -34,7 +34,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(null!);
+					=> await That(subject).IsJsonSerializedAs(null!);
 
 				await That(Act).Throws<ArgumentNullException>()
 					.WithMessage("The expected JSON cannot be null.*").AsWildcard()
@@ -48,12 +48,12 @@ public sealed partial class ThatJsonObject
 				subject.Next = subject;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("{}");
+					=> await That(subject).IsJsonSerializedAs("{}");
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {},
+					             is serialized as JSON {},
 					             but it could not be serialized: A possible object cycle was detected.*
 					             """).AsWildcard();
 			}
@@ -64,12 +64,12 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock, "Let It Be");
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2}""");
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2}""");
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Let It Be", "Genre": 2},
+					             is serialized as JSON {"Title": "Let It Be", "Genre": 2},
 					             but it differed as $.Album had unexpected "Let It Be"
 
 					             Serialized:
@@ -84,7 +84,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock, "Let It Be");
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be"}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be"}""",
 						o => o.IgnoringAdditionalProperties());
 
 				await That(Act).DoesNotThrow();
@@ -96,7 +96,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""
+					=> await That(subject).IsJsonSerializedAs("""
 					                                      {
 					                                        "Genre": 2,
 					                                        "Title": "Let It Be",
@@ -114,14 +114,14 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2, "Album": null}""")
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2, "Album": null}""")
 						.And.IsNull();
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Let It Be", "Genre": 2, "Album": null} and is null,
-					             but it was ThatJsonObject.IsSerializedAs.Track {
+					             is serialized as JSON {"Title": "Let It Be", "Genre": 2, "Album": null} and is null,
+					             but it was ThatJsonObject.IsJsonSerializedAs.Track {
 					                 Album = <null>,
 					                 Genre = Rock,
 					                 Title = "Let It Be"
@@ -136,7 +136,7 @@ public sealed partial class ThatJsonObject
 				object subject = new Track("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2, "Album": null}""");
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2, "Album": null}""");
 
 				await That(Act).DoesNotThrow()
 					.Because("the serializer writes the runtime type of a value declared as object");
@@ -148,7 +148,7 @@ public sealed partial class ThatJsonObject
 				Track? subject = null;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("null");
+					=> await That(subject).IsJsonSerializedAs("null");
 
 				await That(Act).DoesNotThrow();
 			}
@@ -159,12 +159,12 @@ public sealed partial class ThatJsonObject
 				Track? subject = null;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("{}");
+					=> await That(subject).IsJsonSerializedAs("{}");
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {},
+					             is serialized as JSON {},
 					             but it differed as $ was <null> instead of {}
 
 					             Serialized:
@@ -178,7 +178,7 @@ public sealed partial class ThatJsonObject
 				int subject = 42;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("42");
+					=> await That(subject).IsJsonSerializedAs("42");
 
 				await That(Act).DoesNotThrow();
 			}
@@ -189,12 +189,12 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Yesterday", "Genre": 2, "Album": null}""");
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Yesterday", "Genre": 2, "Album": null}""");
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Yesterday", "Genre": 2, "Album": null},
+					             is serialized as JSON {"Title": "Yesterday", "Genre": 2, "Album": null},
 					             but it differed as $.Title was "Let It Be" instead of "Yesterday"
 
 					             Serialized:
@@ -208,7 +208,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"title": "Let It Be", "genre": 2, "album": null}""");
+					=> await That(subject).IsJsonSerializedAs("""{"title": "Let It Be", "genre": 2, "album": null}""");
 
 				using (Customize.aweXpect.Json().DefaultJsonSerializerOptions.Set(new JsonSerializerOptions
 				       {
@@ -234,7 +234,7 @@ public sealed partial class ThatJsonObject
 				};
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"title": "Let It Be", "genre": "rock"}""",
+					=> await That(subject).IsJsonSerializedAs("""{"title": "Let It Be", "genre": "rock"}""",
 						serializerOptions);
 
 				await That(Act).DoesNotThrow();
@@ -247,13 +247,13 @@ public sealed partial class ThatJsonObject
 				JsonSerializerOptions serializerOptions = new(JsonSerializerDefaults.Web);
 
 				async Task Act()
-					=> await That(track).IsSerializedAs("""{"title": "Let It Be", "genre": "rock"}""",
+					=> await That(track).IsJsonSerializedAs("""{"title": "Let It Be", "genre": "rock"}""",
 						serializerOptions);
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that track
-					             is serialized as {"title": "Let It Be", "genre": "rock"},
+					             is serialized as JSON {"title": "Let It Be", "genre": "rock"},
 					             but it differed as
 					               $.genre was number 2 instead of "rock" and
 					               $.album had unexpected <null>
@@ -273,7 +273,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						Title = It.Is<string>().That.StartsWith("Yes"),
 						Genre = 2,
@@ -283,7 +283,7 @@ public sealed partial class ThatJsonObject
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as new
+					             is serialized as JSON new
 					             {
 					             	Title = It.Is<string>().That.StartsWith("Yes"),
 					             	Genre = 2,
@@ -302,7 +302,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						Title = It.Is<string>().That.StartsWith("Let"),
 						Genre = 2,
@@ -319,14 +319,14 @@ public sealed partial class ThatJsonObject
 				subject.Next = subject;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 					});
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as new
+					             is serialized as JSON new
 					             {
 					             },
 					             but it could not be serialized: A possible object cycle was detected.*
@@ -339,7 +339,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						Title = "Let It Be",
 					});
@@ -347,7 +347,7 @@ public sealed partial class ThatJsonObject
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as new
+					             is serialized as JSON new
 					             {
 					             	Title = "Let It Be",
 					             },
@@ -367,7 +367,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock, "Let It Be");
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						Title = "Let It Be",
 						Genre = 2,
@@ -383,7 +383,7 @@ public sealed partial class ThatJsonObject
 				Track? subject = null;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs((object?)null);
+					=> await That(subject).IsJsonSerializedAs((object?)null);
 
 				await That(Act).DoesNotThrow();
 			}
@@ -403,7 +403,7 @@ public sealed partial class ThatJsonObject
 				};
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						title = "Let It Be",
 						genre = "rock",
@@ -419,7 +419,7 @@ public sealed partial class ThatJsonObject
 				JsonSerializerOptions serializerOptions = new(JsonSerializerDefaults.Web);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs(new
+					=> await That(subject).IsJsonSerializedAs(new
 					{
 						genre = "rock",
 					}, serializerOptions, o => o.IgnoringAdditionalProperties());
@@ -427,7 +427,7 @@ public sealed partial class ThatJsonObject
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as new
+					             is serialized as JSON new
 					             {
 					             	genre = "rock",
 					             },
@@ -450,7 +450,7 @@ public sealed partial class ThatJsonObject
 				Album subject = new("Let It Be", ["Two of Us", "Dig a Pony", "Across the Universe",]);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Tracks": ["Two of Us"]}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Tracks": ["Two of Us"]}""",
 						o => o.IgnoringAdditionalArrayElements());
 
 				await That(Act).DoesNotThrow();
@@ -462,7 +462,7 @@ public sealed partial class ThatJsonObject
 				Album subject = new("Let It Be", ["Two of Us", "Dig a Pony",]);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Tracks": ["Dig a Pony", "Two of Us"]}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Tracks": ["Dig a Pony", "Two of Us"]}""",
 						o => o.IgnoringArrayOrder());
 
 				await That(Act).DoesNotThrow();
@@ -474,13 +474,13 @@ public sealed partial class ThatJsonObject
 				Album subject = new("Let It Be", ["Two of Us", "Dig a Pony",]);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Tracks": ["Dig a Pony", "Get Back"]}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Tracks": ["Dig a Pony", "Get Back"]}""",
 						o => o.IgnoringArrayOrder());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Let It Be", "Tracks": ["Dig a Pony", "Get Back"]},
+					             is serialized as JSON {"Title": "Let It Be", "Tracks": ["Dig a Pony", "Get Back"]},
 					             but it differed as $.Tracks[0] was "Two of Us" instead of "Get Back"
 
 					             Serialized:
@@ -497,7 +497,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock, "Let It Be");
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
 						o => o.IgnoringMember("Album"));
 
 				await That(Act).DoesNotThrow();
@@ -509,13 +509,13 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock, "Let It Be");
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
 						o => o.IgnoringMember("Albun"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Let It Be", "Genre": 2},
+					             is serialized as JSON {"Title": "Let It Be", "Genre": 2},
 					             but it differed as $.Album had unexpected "Let It Be"
 
 					             Serialized:
@@ -533,7 +533,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2}""",
 						o => o.TreatingNullAsAbsent());
 
 				await That(Act).DoesNotThrow();
@@ -549,12 +549,12 @@ public sealed partial class ThatJsonObject
 				subject.Next = subject;
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("{}", GetTypeInfo<Node>(new JsonSerializerOptions()));
+					=> await That(subject).IsJsonSerializedAs("{}", GetTypeInfo<Node>(new JsonSerializerOptions()));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {},
+					             is serialized as JSON {},
 					             but it could not be serialized: A possible object cycle was detected.*
 					             """).AsWildcard();
 			}
@@ -569,7 +569,7 @@ public sealed partial class ThatJsonObject
 				});
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"title": "Let It Be", "genre": 2, "album": null}""",
+					=> await That(subject).IsJsonSerializedAs("""{"title": "Let It Be", "genre": 2, "album": null}""",
 						typeInfo);
 
 				await That(Act).DoesNotThrow()
@@ -583,13 +583,13 @@ public sealed partial class ThatJsonObject
 				JsonTypeInfo<Track> typeInfo = GetTypeInfo<Track>(new JsonSerializerOptions());
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("""{"Title": "Let It Be", "Genre": 1}""",
+					=> await That(subject).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 1}""",
 						typeInfo, o => o.TreatingNullAsAbsent());
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is serialized as {"Title": "Let It Be", "Genre": 1},
+					             is serialized as JSON {"Title": "Let It Be", "Genre": 1},
 					             but it differed as $.Genre was 2 instead of 1
 
 					             Serialized:
@@ -607,7 +607,7 @@ public sealed partial class ThatJsonObject
 				JsonTypeInfo<Track> typeInfo = GetTypeInfo<Track>(new JsonSerializerOptions());
 
 				async Task Act()
-					=> await That(subject).IsSerializedAs("null", typeInfo);
+					=> await That(subject).IsJsonSerializedAs("null", typeInfo);
 
 				await That(Act).DoesNotThrow();
 			}
@@ -628,12 +628,12 @@ public sealed partial class ThatJsonObject
 				subject.Next = subject;
 
 				async Task Act()
-					=> await That(subject).DoesNotComplyWith(it => it.IsSerializedAs("{}"));
+					=> await That(subject).DoesNotComplyWith(it => it.IsJsonSerializedAs("{}"));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is not serialized as {},
+					             is not serialized as JSON {},
 					             but it could not be serialized: A possible object cycle was detected.*
 					             """).AsWildcard()
 					.Because("a subject that cannot be serialized is not serialized as anything else either");
@@ -645,7 +645,7 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).DoesNotComplyWith(it => it.IsSerializedAs(new
+					=> await That(subject).DoesNotComplyWith(it => it.IsJsonSerializedAs(new
 					{
 						Title = "Yesterday",
 					}));
@@ -659,13 +659,13 @@ public sealed partial class ThatJsonObject
 				Track subject = new("Let It Be", Genre.Rock);
 
 				async Task Act()
-					=> await That(subject).DoesNotComplyWith(it => it.IsSerializedAs("""{"Title": "Let It Be"}""",
+					=> await That(subject).DoesNotComplyWith(it => it.IsJsonSerializedAs("""{"Title": "Let It Be"}""",
 						o => o.IgnoringAdditionalProperties()));
 
 				await That(Act).Throws<XunitException>()
 					.WithMessage("""
 					             Expected that subject
-					             is not serialized as {"Title": "Let It Be"},
+					             is not serialized as JSON {"Title": "Let It Be"},
 					             but it was
 
 					             Serialized:

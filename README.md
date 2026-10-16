@@ -34,7 +34,7 @@ Expectations for JSON strings and `System.Text.Json` for [aweXpect](https://gith
 | [`IsNumber`](#jsonnode)                                 | `JsonNode`    | a JSON number                                             |
 | [`IsBoolean`](#jsonnode)                                | `JsonNode`    | a JSON boolean, i.e. `true` or `false`                    |
 | [`IsJsonSerializable`](#json-serializable)              | `object`      | survives a round trip through the JSON serializer         |
-| [`IsSerializedAs`](#serialized-as-json)                 | `object`      | serialized by the JSON serializer as the expected JSON    |
+| [`IsJsonSerializedAs`](#serialized-as-json)             | `object`      | serialized by the JSON serializer as the expected JSON    |
 
 ## String comparison as JSON
 
@@ -750,15 +750,15 @@ JsonSerializerOptions serializerOptions = new(JsonSerializerDefaults.Web)
     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
 };
 
-await Expect.That(track).IsSerializedAs("""{"title": "Let It Be", "genre": "rock"}""", serializerOptions);
-await Expect.That(track).IsSerializedAs(new { title = "Let It Be", genre = "rock" }, serializerOptions);
+await Expect.That(track).IsJsonSerializedAs("""{"title": "Let It Be", "genre": "rock"}""", serializerOptions);
+await Expect.That(track).IsJsonSerializedAs(new { title = "Let It Be", genre = "rock" }, serializerOptions);
 ```
 
 With `new JsonSerializerOptions(JsonSerializerDefaults.Web)` instead, the first expectation would fail with:
 
 ```text title="Failure message"
 Expected that track
-is serialized as {"title": "Let It Be", "genre": "rock"},
+is serialized as JSON {"title": "Let It Be", "genre": "rock"},
 but it differed as
   $.genre was number 2 instead of "rock" and
   $.album had unexpected <null>
@@ -768,7 +768,7 @@ Serialized:
 ```
 
 Unlike [`IsJsonSerializable`](#json-serializable), which verifies that an object survives a round trip through the
-serializer, `IsSerializedAs` verifies the JSON itself: the property names and their casing, the representation of
+serializer, `IsJsonSerializedAs` verifies the JSON itself: the property names and their casing, the representation of
 enums, omitted `null` values and the effect of converters.
 
 The expected value is either a JSON string, which must be valid JSON (otherwise an `ArgumentException` is thrown), or
@@ -782,7 +782,7 @@ The serialized JSON is compared exactly, like in `MatchesExactly`, so additional
 `TreatingNullAsAbsent()` or `IgnoringMember(name)`:
 
 ```csharp
-await Expect.That(track).IsSerializedAs(new { title = "Let It Be" }, serializerOptions,
+await Expect.That(track).IsJsonSerializedAs(new { title = "Let It Be" }, serializerOptions,
     o => o.IgnoringAdditionalProperties());
 ```
 
@@ -794,7 +794,7 @@ with the expected value as a JSON string:
 [JsonSerializable(typeof(Track))]
 internal partial class TrackContext : JsonSerializerContext;
 
-await Expect.That(track).IsSerializedAs("""{"Title": "Let It Be", "Genre": 2}""", TrackContext.Default.Track,
+await Expect.That(track).IsJsonSerializedAs("""{"Title": "Let It Be", "Genre": 2}""", TrackContext.Default.Track,
     o => o.TreatingNullAsAbsent());
 ```
 
@@ -804,8 +804,8 @@ You can change the default
 [`JsonDocumentOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsondocumentoptions), used to
 parse JSON strings, and the default
 [`JsonSerializerOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializeroptions), used to
-format JSON values and to serialize the subject of [`IsSerializedAs`](#serialized-as-json). Both allow trailing commas
-by default. Each value is set on its own and restored when the returned
+format JSON values and to serialize the subject of [`IsJsonSerializedAs`](#serialized-as-json). Both allow trailing
+commas by default. Each value is set on its own and restored when the returned
 lifetime is disposed:
 
 ```csharp

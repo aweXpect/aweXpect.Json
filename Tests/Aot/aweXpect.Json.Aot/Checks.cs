@@ -93,14 +93,14 @@ internal static partial class Checks
 				.DoesNotComplyWith(it => it.IsJsonSerializable<Dto>()))),
 		new("an object serialized with its source-generated type info passes",
 			() => ShouldPass(async () => await That(new Dto { Name = "a", })
-				.IsSerializedAs("{\"Name\": \"a\"}", DtoContext.Default.Dto))),
+				.IsJsonSerializedAs("{\"Name\": \"a\"}", DtoContext.Default.Dto))),
 		new("an object serialized differently with its source-generated type info fails and names the difference",
 			() => ShouldFail(async () => await That(new Dto { Name = "a", })
-					.IsSerializedAs("{\"Name\": \"b\"}", DtoContext.Default.Dto),
+					.IsJsonSerializedAs("{\"Name\": \"b\"}", DtoContext.Default.Dto),
 				"$.Name", "Serialized:", "{\"Name\":\"a\"}")),
 		new("an object serialized without type info fails loudly",
 			() => ShouldFailLoudly(async () => await That(new Dto { Name = "a", })
-				.IsSerializedAs("{\"Name\": \"a\"}"))),
+				.IsJsonSerializedAs("{\"Name\": \"a\"}"))),
 	];
 
 	private static JsonElement Parse(string json)
