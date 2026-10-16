@@ -79,7 +79,7 @@ public static partial class ThatJsonElement
 					() => Formatter.Format(actual, FormattingOptions.MultipleLines)));
 			}
 
-			options.AddContext(contexts);
+			options.AddContext(contexts, _jsonValidation?.UnmatchedMembersToIgnore);
 		}
 
 		protected override void AppendNormalExpectation(StringBuilder stringBuilder, string? indentation = null)
