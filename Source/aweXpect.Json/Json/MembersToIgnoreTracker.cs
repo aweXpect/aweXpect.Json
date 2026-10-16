@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using aweXpect.Core.Extending;
 using aweXpect.Equivalency;
-using aweXpect.Helpers;
 
 namespace aweXpect.Json;
 
