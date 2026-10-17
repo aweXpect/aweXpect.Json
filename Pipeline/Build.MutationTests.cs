@@ -102,6 +102,12 @@ partial class Build
 						$"Stryker did not execute successfully for {project.Key.Name}: (exit code {process.ExitCode}).");
 				}
 
+				if (!File.Exists(ArtifactsDirectory / "Stryker" / "reports" / "mutation-report.md"))
+				{
+					Log.Information("Stryker found nothing to mutate in {ProjectName}", project.Key.Name);
+					continue;
+				}
+
 				MutationCommentBody += Environment.NewLine + CreateMutationCommentBody(project.Key.Name);
 			}
 		});
@@ -147,7 +153,14 @@ partial class Build
 			var branchName = File.ReadAllText(ArtifactsDirectory / "BranchName.txt");
 			foreach (var project in projects)
 			{
-				var reportComment = File.ReadAllText(ArtifactsDirectory / "Stryker" / "reports" / "mutation-report.json");
+				AbsolutePath report = ArtifactsDirectory / "Stryker" / "reports" / "mutation-report.json";
+				if (!File.Exists(report))
+				{
+					Log.Information("Skip uploading the mutation report of {ProjectName}, as Stryker found nothing to mutate", project.Key.Name);
+					continue;
+				}
+
+				var reportComment = File.ReadAllText(report);
 				using var client = new HttpClient();
 				client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
 				// https://stryker-mutator.io/docs/General/dashboard/#send-a-report-via-curl
